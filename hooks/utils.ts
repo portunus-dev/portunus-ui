@@ -230,3 +230,61 @@ export const useForm = (fields: Field[]) => {
 
   return { form, getFormAsObject, dispatch };
 };
+
+// Abstracts a common request patterns { data, loading, error } into a single function
+
+type RequestParameters = {
+  initData?: any;
+  initLoading?: boolean;
+  loadOnFetch?: boolean;
+  requestPromise: () => Promise<any>;
+};
+
+type RequestReducerType = "data" | "loading" | "error";
+type RequestState = {
+  data: any;
+  loading: boolean;
+  error?: Error;
+};
+
+export const useRequest = ({
+  initData = {},
+  initLoading = false,
+  loadOnFetch = true,
+  requestPromise,
+}: RequestParameters): RequestState & {
+  executeRequest: () => Promise<void>;
+} => {
+  const [state, dispatch] = useReducer(
+    (
+      state: RequestState,
+      { type, payload }: { type: RequestReducerType; payload: any }
+    ) => {
+      const value = { [type]: payload };
+
+      // reset error when loading === true or data is received
+      if ((type === "loading" && payload) || type === "data") {
+        value.error = false;
+      }
+      return {
+        ...state,
+        ...value,
+      };
+    },
+    {
+      data: initData,
+      loading: initLoading,
+      error: undefined,
+    }
+  );
+
+  const executeRequest = useCallback(async () => {
+    if (loadOnFetch) dispatch({ type: "loading", payload: true });
+    requestPromise()
+      .then((payload) => dispatch({ type: "data", payload }))
+      .catch((e: Error) => dispatch({ type: "error", payload: e }))
+      .finally(() => dispatch({ type: "loading", payload: false }));
+  }, [requestPromise, loadOnFetch]);
+
+  return { ...state, executeRequest };
+};
