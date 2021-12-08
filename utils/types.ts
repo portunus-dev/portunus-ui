@@ -24,9 +24,9 @@ export type Var = {
 
 export type SingleEntity = {
   // current choice
-  team: Team | null;
-  project: Project | null;
-  stage: Stage | null;
+  team?: Team;
+  project?: Project;
+  stage?: Stage;
 };
 
 export type ArrayEntity = {

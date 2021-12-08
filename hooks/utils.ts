@@ -114,17 +114,28 @@ type Validators = { email: Function; name: Function };
 
 const VALIDATORS: Validators = {
   email: (v: string) => !/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v),
-  name: (v: string) => v.length >= 3,
+  name: (v: string) => v.length <= 3,
   // password: e.g. strength calculation, check to see if it matches old pw
 };
 
-type Field<T> = {
+export type Field = {
   key: string;
-  defaultValue: T;
-  validation: keyof Validators | ((o: T) => boolean);
+  defaultValue?: any;
+  // ====[TODO] this usage feels silly. I thought it would give m
+  validation?: keyof Validators | ((o: any) => boolean);
+  label?: string;
+  type?: string;
+  options?: {
+    value: string;
+    label: string;
+  }[];
+  invalidText?: string;
+  helperText?: string;
+  materialProps?: any;
 };
 
-type FormReducerState = {
+// ====[TODO] could include "all fields filled" + "all fields valid" state
+export type FormReducerState = {
   [key: string]: {
     value: any;
     invalid?: boolean;
@@ -135,17 +146,17 @@ type FormReducerType = "update" | "fields" | keyof FormReducerState;
 
 const fieldsToFormObject = (
   state: FormReducerState,
-  fields: Field<any>[]
+  fields: Field[]
 ): FormReducerState =>
   fields.reduce(
     (agg, field) => ({
       ...agg,
-      [field.key]: state[field.key] || { value: field.defaultValue },
+      [field.key]: state[field.key] || { value: field.defaultValue || null },
     }),
     {}
   );
 
-export const useForm = (fields: Field<any>[]) => {
+export const useForm = (fields: Field[]) => {
   const [form, dispatch] = useReducer(
     (
       state: FormReducerState,
@@ -153,7 +164,7 @@ export const useForm = (fields: Field<any>[]) => {
     ) => {
       if (type === "update") {
         // update all keys from payload{}
-        // ====[TODO] depending on usage, what about "invalid" key?
+        // ====[TODO] depending on usage, what about the "invalid" key here?
         return {
           ...state,
           ...Object.entries(state).reduce(
@@ -182,11 +193,11 @@ export const useForm = (fields: Field<any>[]) => {
         return state;
       }
 
-      // ====[NOTE] provide a function or a key in VALIDATORS
+      // ====[NOTE] provide a function or a key in VALIDATORS; defaults to valid
       let validationFn;
       if (typeof field.validation === "function") {
         validationFn = field.validation;
-      } else if (VALIDATORS[field.validation]) {
+      } else if (field.validation && VALIDATORS[field.validation]) {
         validationFn = VALIDATORS[field.validation];
       }
 

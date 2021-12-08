@@ -13,10 +13,13 @@ import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 
-import ThisList from "../components/List";
+import InteractiveList from "../components/InteractiveList";
 import { useEnv } from "../hooks/env";
 import { generateTestEnv } from "../utils/test-data";
 import { ArrayEntity, Team, Project, Stage } from "../utils/types";
+
+import { useForm, Field } from "../hooks/utils";
+import Form from "../components/Form";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -64,6 +67,12 @@ export const getServerSideProps = async () => {
   return { props: generateTestEnv() };
 };
 
+const INDENT = {
+  team: 1,
+  project: 3,
+  stage: 5,
+};
+
 type EnvType = "team" | "project" | "stage";
 
 type EnvOption = {
@@ -72,26 +81,11 @@ type EnvOption = {
   path: string;
 } & (Team | Project | Stage);
 
-const BASE_FIELDS = [
-  { label: "Username", key: "username" },
-  {
-    label: "Email",
-    key: "email",
-    include: (signUp) => signUp,
-    helperText: "format: abc@abc.com",
-    validation: "email",
-    invalidText: "Please provide a valid email address",
-  },
-  { label: "Password", key: "password", type: "password" },
-];
-
 export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
-  // console.log("INITS=====>", teams, projects, stages);
-
-  const [value, setValue] = React.useState(0);
+  const [value, setTab] = React.useState(0);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    setTab(newValue);
   };
 
   const { env, dispatch } = useEnv({ teams, projects, stages });
@@ -107,12 +101,6 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
 
   const handleChooseStage = (value: Stage) => () =>
     handleChoose("stage", value.key);
-
-  const INDENT = {
-    team: 1,
-    project: 3,
-    stage: 5,
-  };
 
   const options: EnvOption[] = useMemo(
     () =>
@@ -151,7 +139,7 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
   };
 
   useEffect(() => {
-    setValue(env.stage ? 2 : env.project ? 1 : 0);
+    setTab(env.stage ? 2 : env.project ? 1 : 0);
   }, [env]);
 
   /*
@@ -164,6 +152,30 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
     - console errors
     - stop polluting env state with options (i.e. we had path, label & desc)
   */
+  const { NEXT_PUBLIC_READ_ONLY } = process.env;
+
+  const TEAM_FIELDS: Field[] = useMemo(
+    () => [
+      {
+        key: "name",
+        label: "Team Name",
+        validation: "name",
+        materialProps: { variant: "standard", required: true },
+      },
+    ],
+    []
+  );
+
+  const {
+    form: teamForm,
+    getFormAsObject: getTeamObject,
+    dispatch: teamDispatch,
+  } = useForm(TEAM_FIELDS);
+
+  const teamOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    teamDispatch({ type: e.target.id, payload: e.target.value });
+  };
+
   return (
     <Box sx={{ width: "100%" }}>
       <AppBar position="static">
@@ -190,13 +202,13 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
           </Typography>
           <Breadcrumbs aria-label="breadcrumb">
             {env.team?.name && (
-              <Button onClick={() => setValue(0)}>{env.team.name}</Button>
+              <Button onClick={() => setTab(0)}>{env.team.name}</Button>
             )}
             {env.project?.project && (
-              <Button onClick={() => setValue(1)}>{env.project.project}</Button>
+              <Button onClick={() => setTab(1)}>{env.project.project}</Button>
             )}
             {env.stage?.stage && (
-              <Button onClick={() => setValue(2)}>{env.stage.stage}</Button>
+              <Button onClick={() => setTab(2)}>{env.stage.stage}</Button>
             )}
           </Breadcrumbs>
         </Box>
@@ -258,23 +270,33 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
         </Box>
         <TabPanel value={value} index={0}>
           <Grid item xs={12} md={4}>
-            <ThisList
+            <InteractiveList
               subheader="Manage Teams"
               selected={env.team}
               items={env.teams}
               titleKey="name"
               onItemClick={handleChooseTeam}
             />
+            {!NEXT_PUBLIC_READ_ONLY && (
+              <Box sx={{ display: "flex" }}>
+                <Form
+                  fields={TEAM_FIELDS}
+                  form={teamForm}
+                  onChange={teamOnChange}
+                />
+                <Button>Add</Button>
+              </Box>
+            )}
           </Grid>
 
           <Grid item xs={12} md={8}>
             {env.team ? (
               <React.Fragment>
                 <h2>Current Team: {env.team.name}</h2>
-                <ThisList
+                <InteractiveList
                   subheader="Your Projects"
                   selected={env.project}
-                  items={env.projects.filter((o) => o.team === env.team.key)}
+                  items={env.projects.filter((o) => o.team === env.team?.key)}
                   titleKey="project"
                   onItemClick={handleChooseProject}
                 />
@@ -287,10 +309,10 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
         <TabPanel value={value} index={1}>
           {env.team && (
             <Grid item xs={12} md={4}>
-              <ThisList
+              <InteractiveList
                 subheader="Manage Projects"
                 selected={env.project}
-                items={env.projects.filter((o) => o.team === env.team.key)}
+                items={env.projects.filter((o) => o.team === env.team?.key)}
                 titleKey="project"
                 onItemClick={handleChooseProject}
               />
@@ -300,11 +322,11 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
             {env.team && env.project ? (
               <React.Fragment>
                 <h2>Current Project: {env.project.project}</h2>
-                <ThisList
+                <InteractiveList
                   subheader="Your Stages"
                   selected={env.stage}
                   items={env.stages.filter(
-                    (o) => o.project === env.project.key
+                    (o) => o.project === env.project?.key
                   )}
                   titleKey="stage"
                   onItemClick={handleChooseStage}
@@ -318,10 +340,10 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
         <TabPanel value={value} index={2}>
           {env.team && env.project && (
             <Grid item xs={12} md={4}>
-              <ThisList
+              <InteractiveList
                 subheader="Manage Stages"
                 selected={env.stage}
-                items={env.stages.filter((o) => o.project === env.project.key)}
+                items={env.stages.filter((o) => o.project === env.project?.key)}
                 titleKey="stage"
                 onItemClick={handleChooseStage}
               />
