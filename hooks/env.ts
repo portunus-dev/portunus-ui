@@ -1,10 +1,10 @@
-import { useReducer } from "react";
+import { useEffect, useReducer } from "react";
 import { EnvState, ArrayEntity, Team, Project, Stage } from "../utils/types";
 
 const EMPTY_ENV: EnvState = {
-  team: null,
-  project: null,
-  stage: null,
+  team: undefined,
+  project: undefined,
+  stage: undefined,
   teams: [],
   projects: [],
   stages: [],
@@ -12,26 +12,27 @@ const EMPTY_ENV: EnvState = {
 
 const CLEAR_ORDER = ["team", "project", "stage"];
 
-type EnvDispatchType = "chooseOption";
+type EnvDispatchType = "loadOptions" | "chooseOption";
 type ArrayTypeKey = "teams" | "projects" | "stages";
 type PortunusEntity = Team | Project | Stage;
 type ArrayOptions = PortunusEntity[];
 
-export const useEnv = ({ teams, projects, stages }: ArrayEntity) => {
+export const useEnv = (init: ArrayEntity | undefined) => {
   const [env, dispatch] = useReducer(
     (
       state: EnvState,
       { type, payload }: { type: EnvDispatchType; payload: any }
     ) => {
-      console.log("====> REDUCER!", type, payload);
-      //   if (type === "loadOptions") {
-      //     return {
-      //       ...state,
-      //       teams: payload.teams,
-      //       projects: payload.projects,
-      //       stages: payload.stages,
-      //     };
-      //   }
+      if (type === "loadOptions") {
+        return {
+          team: undefined,
+          project: undefined,
+          stage: undefined,
+          teams: payload.teams as Team[],
+          projects: payload.projects as Project[],
+          stages: payload.stages as Stage[],
+        };
+      }
 
       // TODO could to { [key]: value } for easier lookup
       if (type === "chooseOption") {
@@ -60,7 +61,6 @@ export const useEnv = ({ teams, projects, stages }: ArrayEntity) => {
         // update "upstream" options
         // e.g. project should clear "stage", update "team"
         const keys = newValue.key.split("::");
-        console.log("====> KEYS", keys);
         const update = CLEAR_ORDER.slice(0, clearIdx).reduce((agg, key, i) => {
           const options: ArrayOptions | null = state[`${key}s` as ArrayTypeKey];
           const newValue = options.find(
@@ -71,7 +71,7 @@ export const useEnv = ({ teams, projects, stages }: ArrayEntity) => {
             [key]: newValue,
           };
         }, {});
-        console.log("====> UPDATE", update);
+
         return {
           ...state,
           [payload.key]: newValue,
@@ -91,8 +91,14 @@ export const useEnv = ({ teams, projects, stages }: ArrayEntity) => {
       //   }
       return state;
     },
-    { ...EMPTY_ENV, teams, projects, stages }
+    { ...EMPTY_ENV }
   );
+
+  useEffect(() => {
+    if (init) {
+      dispatch({ type: "loadOptions", payload: init });
+    }
+  }, [init]);
 
   return { env, dispatch };
 };

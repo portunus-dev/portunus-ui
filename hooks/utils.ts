@@ -233,31 +233,31 @@ export const useForm = (fields: Field[]) => {
 
 // Abstracts a common request patterns { data, loading, error } into a single function
 
-type RequestParameters = {
-  initData?: any;
+type RequestParameters<T> = {
+  initData?: T;
   initLoading?: boolean;
   loadOnFetch?: boolean;
-  requestPromise: () => Promise<any>;
+  requestPromise: (params?: any) => Promise<T>;
 };
 
 type RequestReducerType = "data" | "loading" | "error";
-type RequestState = {
-  data: any;
+type RequestState<T> = {
+  data: T | undefined;
   loading: boolean;
   error?: Error;
 };
 
-export const useRequest = ({
-  initData = {},
+export const useRequest = <T>({
+  initData,
   initLoading = false,
   loadOnFetch = true,
   requestPromise,
-}: RequestParameters): RequestState & {
-  executeRequest: () => Promise<void>;
+}: RequestParameters<T>): RequestState<T> & {
+  executeRequest: (params?: any) => Promise<void>;
 } => {
   const [state, dispatch] = useReducer(
     (
-      state: RequestState,
+      state: RequestState<T>,
       { type, payload }: { type: RequestReducerType; payload: any }
     ) => {
       const value = { [type]: payload };
@@ -278,13 +278,17 @@ export const useRequest = ({
     }
   );
 
-  const executeRequest = useCallback(async () => {
-    if (loadOnFetch) dispatch({ type: "loading", payload: true });
-    requestPromise()
-      .then((payload) => dispatch({ type: "data", payload }))
-      .catch((e: Error) => dispatch({ type: "error", payload: e }))
-      .finally(() => dispatch({ type: "loading", payload: false }));
-  }, [requestPromise, loadOnFetch]);
+  const executeRequest = useCallback(
+    async (params: any) => {
+      if (loadOnFetch) dispatch({ type: "loading", payload: true });
+      requestPromise(params)
+        .then((payload) => dispatch({ type: "data", payload }))
+        // TODO get error message from response?
+        .catch((e: Error) => dispatch({ type: "error", payload: e }))
+        .finally(() => dispatch({ type: "loading", payload: false }));
+    },
+    [requestPromise, loadOnFetch]
+  );
 
   return { ...state, executeRequest };
 };
