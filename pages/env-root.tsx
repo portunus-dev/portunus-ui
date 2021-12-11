@@ -194,11 +194,31 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
     teamDispatch({ type: e.target.id, payload: e.target.value });
   };
 
+  const fetchTeamUserData = useCallback(async (team: Team) => {
+    const res = await apiRequest(`users?team=${team.key}`, { method: "GET" });
+    const vars = res;
+    return vars;
+  }, []);
+
+  const {
+    data: teamUserData,
+    loading: teamUserLoading,
+    error: teamUserError,
+    executeRequest: teamUserExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: fetchTeamUserData,
+  });
+
+  useEffect(() => {
+    if (env.team) {
+      teamUserExecuteRequest(env.team);
+    }
+  }, [env.team]);
+
   // end TEAM specific
 
   // start STAGE specific
   const fetchVarData = useCallback(async ({ team, project, stage }) => {
-    console.log("fetch var data", team, project, stage);
     const res = await apiRequest(
       `env?team=${team.key}&project=${project.project}&stage=${stage.stage}`,
       { method: "GET" }
@@ -389,6 +409,19 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
               {env.team ? (
                 <React.Fragment>
                   <h2>Current Team: {env.team.name}</h2>
+                  <div>
+                    {teamUserLoading && <CircularProgress />}
+                    {!teamUserLoading && teamUserError && teamUserError.message}
+                    {!teamUserLoading && !teamUserError && teamUserData && (
+                      <div>
+                        <InteractiveList
+                          subheader="Users"
+                          items={teamUserData.items}
+                          titleKey="email"
+                        />
+                      </div>
+                    )}
+                  </div>
                   <InteractiveList
                     subheader="Your Projects"
                     selected={env.project}
