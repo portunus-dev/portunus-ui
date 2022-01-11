@@ -192,7 +192,7 @@ export default ({ handleChooseStage }: StageTabProps) => {
             {varLoading && <CircularProgress />}
             {!varLoading && varError && varError.message}
             {!varLoading && !varError && varData && (
-              <KVEditor initialKV={varData.vars} />
+              <KVEditor initialKV={varData.vars} env={env} />
             )}
           </React.Fragment>
         ) : (

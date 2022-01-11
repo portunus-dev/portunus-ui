@@ -6,11 +6,16 @@ import TextField from "@mui/material/TextField";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // import DeleteIcon from "@mui/icons-material/Delete";
 // import AddIcon from "@mui/icons-material/Add";
 
 import JSONInput from "react-json-editor-ajrm";
+
+import { useRequest } from "../hooks/utils";
+import { EnvState } from "../utils/types";
+import { apiRequest } from "../utils/api";
 
 type KVStore = { [k: string]: string };
 type onChangeListener = (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -19,12 +24,13 @@ type KVList = KVListItem[];
 
 type KVEditorProps = {
   initialKV: KVStore;
+  env: EnvState;
 };
 
 type Changes = {
   add: KVStore;
   edit: KVStore;
-  remove?: string[];
+  remove: string[];
 };
 
 const transformObjectToList: (o: KVStore) => KVList = (obj) =>
@@ -39,7 +45,10 @@ const transformListToObject: (o: KVList) => KVStore = (list) =>
     return agg;
   }, {} as KVStore);
 
-const calculateDelta = (initial: KVStore, current: KVList) => {
+const calculateDelta: (initial: KVStore, current: KVList) => Changes = (
+  initial,
+  current
+) => {
   const { add, edit }: Changes = current.reduce(
     (agg, ele) => {
       if (initial[ele.key] === undefined) {
@@ -49,7 +58,7 @@ const calculateDelta = (initial: KVStore, current: KVList) => {
       }
       return agg;
     },
-    { add: {}, edit: {} } as Changes
+    { add: {}, edit: {}, remove: [] } as Changes
   );
 
   const remove = Object.keys(initial).filter(
@@ -58,23 +67,17 @@ const calculateDelta = (initial: KVStore, current: KVList) => {
   return { add, edit, remove };
 };
 
-const KVEditor = ({ initialKV }: KVEditorProps) => {
+const EMPTY_CHANGES = { add: {}, edit: {}, remove: [] } as Changes;
+
+const KVEditor = ({ initialKV, env }: KVEditorProps) => {
+  // TODO: current updating in KVEditor is broken by changing tabs because component unmounts, but initialKV doesn't change since varData isn't reloaded
+  const [base, setBase] = useState(initialKV);
   const [editing, setEditing] = useState(false);
   const [jsonEdit, setJsonEdit] = useState(false);
   const [jsonInitialKV, setJsonInitialKV] = useState(initialKV);
-  const [jsonWorkingKV, setJsonWorkingKV] = useState(initialKV);
   const [workingKV, setWorkingKV] = useState(transformObjectToList(initialKV));
   const [infoMessage, setInfoMessage] = useState("");
-  const [changes, setChanges] = useState(null); // the delta commands for API call
-
-  useEffect(() => {
-    setWorkingKV(transformObjectToList(initialKV));
-    setJsonInitialKV(initialKV);
-    setChanges(null);
-    setInfoMessage("");
-    setEditing(false);
-    setJsonEdit(false);
-  }, [initialKV]);
+  const [changes, setChanges] = useState(EMPTY_CHANGES); // the delta commands for API call
 
   const handleOnKeyChange: (index: number) => onChangeListener =
     (index) => (e) =>
@@ -102,10 +105,9 @@ const KVEditor = ({ initialKV }: KVEditorProps) => {
       setInfoMessage("");
     }
 
-    setChanges(calculateDelta(initialKV, workingKV));
-    console.log("===> USE EFFECT", workingKV);
+    setChanges(calculateDelta(base, workingKV));
     setJsonInitialKV(transformListToObject(workingKV));
-  }, [workingKV, initialKV]);
+  }, [workingKV, base]);
 
   const handleOnValueChange: (index: number) => onChangeListener =
     (index) => (e) =>
@@ -138,33 +140,70 @@ const KVEditor = ({ initialKV }: KVEditorProps) => {
     });
 
   const handleOnEditVariables = () => setEditing(true);
-  const handleOnSaveVariables = () => {
-    // TODO send api call and update
-    setEditing(false);
-  };
   const handleOnCancelEdit = () => {
     // revert changes
-    setWorkingKV(transformObjectToList(initialKV));
+    setWorkingKV(transformObjectToList(base));
     setEditing(false);
+    setJsonEdit(false);
   };
 
-  // ({ json, error }) => console.log(json, error)
   const [jsonError, setJsonError] = useState(false);
-  const handleOnWorkingKVChange = ({ jsObject, error }) => {
-    // TODO: validate nesting, arrays etc
-    setJsonWorkingKV(jsObject);
+  const handleOnJsonKVChange = ({
+    jsObject,
+    error,
+  }: {
+    jsObject: KVStore;
+    error: any;
+  }) => {
+    if (!jsonError) {
+      // TODO: validate nesting, arrays etc
+      setWorkingKV(transformObjectToList(jsObject));
+    }
     setJsonError(error === false ? false : error.reason);
   };
-  const handleOnJsonToggle = useCallback(() => {
-    if (!jsonError && jsonEdit) {
-      setWorkingKV(transformObjectToList(jsonWorkingKV));
+  const handleOnJsonToggle = () => setJsonEdit((o) => !o);
+
+  const putVarData = useCallback(async ({ team, project, stage, updates }) => {
+    const res = await apiRequest("env", {
+      method: "PUT",
+      body: JSON.stringify({
+        stage: `${team.key}::${project.project}::${stage.stage}`,
+        updates,
+      }),
+    });
+    const vars = res;
+    return vars;
+  }, []);
+
+  // TODO: have a direct override for useRequest data/loading/error or a better way to confirm this diff
+  const {
+    data: varData,
+    loading: varLoading,
+    error: varError,
+    executeRequest: varExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: putVarData,
+  });
+
+  const handleOnSaveVariables = () => {
+    varExecuteRequest({ ...env, updates: changes });
+  };
+
+  useEffect(() => {
+    if (!varLoading && !varError && varData) {
+      setBase(transformListToObject(workingKV));
+      setChanges(EMPTY_CHANGES);
+      setInfoMessage("");
+      setEditing(false);
+      setJsonEdit(false);
     }
-    // TODO: the below will enforce a change to workingKV format (i.e. no nesting)
-    // if (!jsonEdit) {
-    //   setJsonInitialKV(transformListToObject(workingKV));
-    // }
-    setJsonEdit((o) => !o);
-  }, [jsonEdit, jsonWorkingKV, jsonError, workingKV]);
+  }, [varData, varError, varLoading]);
+
+  const noChanges =
+    changes &&
+    !Object.values(changes.add).length &&
+    !Object.values(changes.edit).length &&
+    !changes.remove.length;
 
   return (
     <Box sx={{ p: 2 }}>
@@ -174,7 +213,7 @@ const KVEditor = ({ initialKV }: KVEditorProps) => {
             <Box>
               <JSONInput
                 placeholder={jsonInitialKV}
-                onChange={handleOnWorkingKVChange}
+                onChange={handleOnJsonKVChange}
                 height="200px"
                 confirmGood={false}
                 theme="light_mitsuketa_tribute"
@@ -204,12 +243,21 @@ const KVEditor = ({ initialKV }: KVEditorProps) => {
               control={<Switch checked={jsonEdit} />}
               onChange={handleOnJsonToggle}
               label="Json"
+              disabled={varLoading}
             />
           </FormGroup>
           {JSON.stringify(changes)}
           {infoMessage}
-          <Button onClick={handleOnSaveVariables}>Save</Button>
-          <Button onClick={handleOnCancelEdit}>Cancel</Button>
+          <Button
+            onClick={handleOnSaveVariables}
+            disabled={varLoading || jsonError || noChanges}
+          >
+            Save
+          </Button>
+          <Button onClick={handleOnCancelEdit} disabled={varLoading}>
+            Cancel
+          </Button>
+          {varLoading && <CircularProgress />}
         </div>
       ) : (
         <div>
@@ -222,7 +270,7 @@ const KVEditor = ({ initialKV }: KVEditorProps) => {
               }}
               key={k}
             >
-              {k}: {v}
+              {k}: {JSON.stringify(v)}
             </Box>
           ))}
           <Button onClick={handleOnEditVariables}>Edit variables</Button>
