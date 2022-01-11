@@ -9,5 +9,14 @@ export const apiRequest = (urlPath: string, fetchParams: any) => {
       "portunus-jwt": localStorage.getItem("portunus-jwt"),
     },
     ...fetchParams,
-  }).then((res) => res.json());
+  })
+    .then(async (res) => ({
+      ok: res.ok,
+      statusText: res.statusText,
+      json: await res.json(),
+    }))
+    .then((res) => {
+      if (res.ok) return res.json;
+      throw new Error(res.json.message || res.statusText);
+    });
 };

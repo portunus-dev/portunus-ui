@@ -18,6 +18,7 @@ import Button from "@mui/material/Button";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 
 import InteractiveList from "../components/InteractiveList";
+import KVEditor from "../components/kv-editor";
 import { useEnv } from "../hooks/env";
 import { generateTestEnv } from "../utils/test-data";
 import { ArrayEntity, Team, Project, Stage } from "../utils/types";
@@ -163,7 +164,6 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
 
   const handleOnQuickSwitch = (e: React.SyntheticEvent, newValue: any) => {
     // need to pull the correct values!
-    console.log(e, newValue);
     if (newValue) handleChoose(newValue.type, newValue.key);
   };
 
@@ -238,7 +238,6 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
   useEffect(() => {
     // though it depends on these 3, only refetch when stage changes
     if (env.team && env.project && env.stage) {
-      console.log("====> FETCH VARS", env);
       varExecuteRequest(env);
     }
   }, [env.stage]);
@@ -246,11 +245,8 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
 
   /*
     TODO
-    - pull VARS
-    - display VARS
     - project form
     - stage form
-    - API crud routes 
     - KV management
     - get state from URL
     - console errors
@@ -488,13 +484,7 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
                   {varLoading && <CircularProgress />}
                   {!varLoading && varError && varError.message}
                   {!varLoading && !varError && varData && (
-                    <div>
-                      {Object.entries(varData.vars).map(([key, value]) => (
-                        <div>
-                          <strong>{key}:</strong> &nbsp; {value}
-                        </div>
-                      ))}
-                    </div>
+                    <KVEditor initialKV={varData.vars} />
                   )}
                 </React.Fragment>
               ) : (

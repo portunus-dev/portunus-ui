@@ -17,6 +17,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-is": "latest",
+    "react-json-editor-ajrm": "^2.5.13",
     "styled-components": "latest"
   },
   "devDependencies": {
