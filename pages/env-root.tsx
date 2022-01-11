@@ -484,7 +484,7 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
                   {varLoading && <CircularProgress />}
                   {!varLoading && varError && varError.message}
                   {!varLoading && !varError && varData && (
-                    <KVEditor initialKV={varData.vars} />
+                    <KVEditor initialKV={varData.vars} env={env} />
                   )}
                 </React.Fragment>
               ) : (

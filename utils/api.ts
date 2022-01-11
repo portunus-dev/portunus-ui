@@ -4,9 +4,10 @@ export const apiRequest = (urlPath: string, fetchParams: any) => {
   // /ui/env?team=EQ Works&project=enrichdata&stage=dev'
   return fetch(`${url}/${urlPath}`, {
     headers: {
-      //   accept: "application/json",
       // TODO: internalize through login process
       "portunus-jwt": localStorage.getItem("portunus-jwt"),
+      accept: "application/json",
+      "Content-Type": "application/json",
     },
     ...fetchParams,
   })
