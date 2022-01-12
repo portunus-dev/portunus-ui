@@ -29,7 +29,7 @@ type ListProps<T extends Object> = {
   onItemClick?: (i: T) => (e: React.MouseEvent<HTMLDivElement>) => void;
   onItemEdit?: (update: string, i: T) => void;
   onItemRemove?: (i: T) => void;
-  confirmCount: number;
+  confirmCount?: number;
 };
 
 type Confirm = {
