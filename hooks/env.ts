@@ -1,3 +1,4 @@
+import { Update } from "@mui/icons-material";
 import { useEffect, useReducer } from "react";
 import { EnvState, ArrayEntity, Team, Project, Stage } from "../utils/types";
 
@@ -17,7 +18,10 @@ type EnvDispatchType =
   | "chooseOption"
   | "addTeam"
   | "deleteTeam"
-  | "editTeam";
+  | "editTeam"
+  | "addProject"
+  | "deleteProject"
+  | "editProject";
 type ArrayTypeKey = "teams" | "projects" | "stages";
 type PortunusEntity = Team | Project | Stage;
 type ArrayOptions = PortunusEntity[];
@@ -88,6 +92,9 @@ export const useEnv = (init: ArrayEntity | undefined) => {
       if (type === "addTeam") {
         return {
           ...state,
+          team: payload,
+          project: undefined,
+          stage: undefined,
           teams: [...state.teams, payload],
         };
       }
@@ -126,7 +133,6 @@ export const useEnv = (init: ArrayEntity | undefined) => {
         const editedTeamIdx = teams.findIndex((o) => o.key === payload.key);
         if (editedTeamIdx < 0) return state;
         const update = { ...teams[editedTeamIdx], name: payload.name };
-        // TODO: change to team here shouldn't update other UI!
         return {
           ...state,
           team: state.team?.key === payload.key ? update : state.team,
@@ -134,6 +140,58 @@ export const useEnv = (init: ArrayEntity | undefined) => {
             ...teams.slice(0, editedTeamIdx),
             update,
             ...teams.slice(editedTeamIdx + 1),
+          ],
+        };
+      }
+
+      if (type === "addProject") {
+        console.log("addProject", payload);
+        return {
+          ...state,
+          project: payload,
+          stage: undefined,
+          projects: [...state.projects, payload],
+        };
+      }
+
+      if (type === "deleteProject") {
+        // remove project > stage
+        // reset chosen state, if it was deleted
+        const stages = state.stages.filter(
+          (stage) => payload.key !== stage.project
+        );
+        const removedStages = state.stages
+          .filter((stage) => payload.key === stage.project)
+          .map((o) => o.key);
+        return {
+          ...state,
+          project:
+            state.project?.key === payload.key ? undefined : state.project,
+          stage: removedStages.includes(state.stage?.key || "")
+            ? undefined
+            : state.stage,
+          projects: state.projects.filter(
+            (project) => project.key !== payload.key
+          ),
+          stages,
+        };
+      }
+
+      if (type === "editProject") {
+        if (!state.projects) return state;
+        const projects = state.projects;
+        const editedProjectIdx = projects.findIndex(
+          (o) => o.key === payload.key
+        );
+        if (editedProjectIdx < 0) return state;
+        const update = { ...projects[editedProjectIdx], project: payload.name };
+        return {
+          ...state,
+          project: state.project?.key === payload.key ? update : state.project,
+          projects: [
+            ...projects.slice(0, editedProjectIdx),
+            update,
+            ...projects.slice(editedProjectIdx + 1),
           ],
         };
       }
