@@ -426,14 +426,121 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
       varExecuteRequest(env);
     }
   }, [env.stage]);
+
+  const STAGE_FIELDS: Field[] = useMemo(
+    () => [
+      {
+        key: "name",
+        label: "Stage Name",
+        validation: "name",
+        materialProps: { variant: "standard", required: true },
+      },
+    ],
+    []
+  );
+
+  const {
+    form: stageForm,
+    getFormAsObject: getStageObject,
+    dispatch: stageDispatch,
+  } = useForm(STAGE_FIELDS);
+
+  const stageOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    stageDispatch({ type: e.target.id, payload: e.target.value });
+  };
+
+  const createNewStage = useCallback(async () => {
+    if (env.team && env.project) {
+      const { key, stage } = await apiRequest("/stage", {
+        method: "POST",
+        body: JSON.stringify({
+          team: env.team.key,
+          project: env.project.project,
+          ...getStageObject(),
+        }),
+      });
+      // TODO: unify responses! Here, .project is key, but response above is name
+      return { key, stage, team: env.team.key, project: env.project.key };
+    }
+  }, [env.team, env.project, getStageObject]);
+
+  const {
+    data: createStageData,
+    loading: createStageLoading,
+    error: createStageError,
+    executeRequest: createStageExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: createNewStage,
+  });
+
+  const handleOnCreateStage = () => createStageExecuteRequest();
+
+  useEffect(() => {
+    if (createStageData) {
+      dispatch({ type: "addStage", payload: createStageData });
+    }
+  }, [createStageData]);
+
+  const deleteStage = useCallback(async (stage: Stage) => {
+    const { key, name } = await apiRequest("/stage", {
+      method: "DELETE",
+      body: JSON.stringify({ stage: stage.key }),
+    });
+    return { key, name };
+  }, []);
+
+  // TODO: loading/error message
+  // TODO: admin based display
+  const {
+    data: deleteStageData,
+    loading: deleteStageLoading,
+    error: deleteStageError,
+    executeRequest: deleteStageExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: deleteStage,
+  });
+
+  const handleOnDeleteStage = (stage: Stage) =>
+    deleteStageExecuteRequest(stage);
+
+  useEffect(() => {
+    if (deleteStageData) {
+      dispatch({ type: "deleteStage", payload: deleteStageData });
+    }
+  }, [deleteStageData]);
+
+  // TODO why is there no editStageName?
+  // const editStage = useCallback(async ({ name, stage }) => {
+  //   await apiRequest("/stage", {
+  //     method: "PUT",
+  //     body: JSON.stringify({ stage: stage.key, name }),
+  //   });
+  //   return { key: stage.key, name };
+  // }, []);
+
+  // const {
+  //   data: editStageData,
+  //   loading: editStageLoading,
+  //   error: editStageError,
+  //   executeRequest: editStageExecuteRequest,
+  // } = useRequest<any>({
+  //   requestPromise: editStage,
+  // });
+
+  // const handleOnEditStage = (newName: string, stage: Stage) =>
+  //   editStageExecuteRequest({ name: newName, stage });
+
+  // useEffect(() => {
+  //   if (editStageData) {
+  //     dispatch({ type: "editStage", payload: editStageData });
+  //   }
+  // }, [editStageData]);
   // end STAGE specific
 
   /*
     TODO
-    - new teams break when clicked
-    - project form
+    - breakout this file
     - stage form
-    - KV management
     - get state from URL
     - console errors
     - stop polluting env state with options (i.e. we had path, label & desc)
@@ -688,7 +795,25 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
                   )}
                   titleKey="stage"
                   onItemClick={handleChooseStage}
+                  // onItemEdit={handleOnEditStage}
+                  onItemRemove={handleOnDeleteStage}
+                  confirmCount={0}
                 />
+                {!NEXT_PUBLIC_READ_ONLY && (
+                  <Box sx={{ display: "flex" }}>
+                    <Form
+                      fields={STAGE_FIELDS}
+                      form={stageForm}
+                      onChange={stageOnChange}
+                    />
+                    <Button
+                      onClick={handleOnCreateStage}
+                      disabled={createStageLoading}
+                    >
+                      Add
+                    </Button>
+                  </Box>
+                )}
               </Grid>
             )}
 
