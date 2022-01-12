@@ -16,7 +16,8 @@ type EnvDispatchType =
   | "loadOptions"
   | "chooseOption"
   | "addTeam"
-  | "deleteTeam";
+  | "deleteTeam"
+  | "editTeam";
 type ArrayTypeKey = "teams" | "projects" | "stages";
 type PortunusEntity = Team | Project | Stage;
 type ArrayOptions = PortunusEntity[];
@@ -92,17 +93,48 @@ export const useEnv = (init: ArrayEntity | undefined) => {
       }
 
       if (type === "deleteTeam") {
+        // remove team > project > stage
+        // reset chosen state, if it was deleted
         const projects = state.projects.filter((o) => o.team !== payload.key);
         const removedProjects = state.projects
           .filter((o) => o.team === payload.key)
           .map((o) => o.key);
+        const stages = state.stages.filter(
+          (stage) => !removedProjects.includes(stage.project)
+        );
+        const removedStages = state.stages
+          .filter((stage) => removedProjects.includes(stage.project))
+          .map((o) => o.key);
         return {
           ...state,
+          team: state.team?.key === payload.key ? undefined : state.team,
+          project: removedProjects.includes(state.project?.key || "")
+            ? undefined
+            : state.project,
+          stage: removedStages.includes(state.stage?.key || "")
+            ? undefined
+            : state.stage,
           teams: state.teams.filter((team) => team.key !== payload.key),
           projects,
-          stages: state.stages.filter(
-            (stage) => !removedProjects.includes(stage.project)
-          ),
+          stages,
+        };
+      }
+
+      if (type === "editTeam") {
+        if (!state.teams) return state;
+        const teams = state.teams;
+        const editedTeamIdx = teams.findIndex((o) => o.key === payload.key);
+        if (editedTeamIdx < 0) return state;
+        const update = { ...teams[editedTeamIdx], name: payload.name };
+        // TODO: change to team here shouldn't update other UI!
+        return {
+          ...state,
+          team: state.team?.key === payload.key ? update : state.team,
+          teams: [
+            ...teams.slice(0, editedTeamIdx),
+            update,
+            ...teams.slice(editedTeamIdx + 1),
+          ],
         };
       }
 

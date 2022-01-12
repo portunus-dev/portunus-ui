@@ -227,6 +227,8 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
     return { key, name };
   }, []);
 
+  // TODO: loading/error message
+  // TODO: admin based display
   const {
     data: deleteTeamData,
     loading: deleteTeamLoading,
@@ -243,6 +245,34 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
       dispatch({ type: "deleteTeam", payload: deleteTeamData });
     }
   }, [deleteTeamData]);
+
+  const editTeam = useCallback(async ({ name, team }) => {
+    await apiRequest("/team", {
+      method: "PUT",
+      body: JSON.stringify({ team: team.key, name }),
+    });
+    return { key: team.key, name };
+  }, []);
+
+  // TODO: loading/error message
+  // TODO: admin based display
+  const {
+    data: editTeamData,
+    loading: editTeamLoading,
+    error: editTeamError,
+    executeRequest: editTeamExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: editTeam,
+  });
+
+  const handleOnEditTeam = (newName: string, team: Team) =>
+    editTeamExecuteRequest({ name: newName, team });
+
+  useEffect(() => {
+    if (editTeamData) {
+      dispatch({ type: "editTeam", payload: editTeamData });
+    }
+  }, [editTeamData]);
 
   const fetchTeamUserData = useCallback(async (team: Team) => {
     const res = await apiRequest(`users?team=${team.key}`, { method: "GET" });
@@ -440,6 +470,7 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
                 titleKey="name"
                 onItemClick={handleChooseTeam}
                 onItemRemove={handleOnDeleteTeam}
+                onItemEdit={handleOnEditTeam}
                 confirmCount={2}
               />
               {!NEXT_PUBLIC_READ_ONLY && (
