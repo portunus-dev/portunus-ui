@@ -13,7 +13,7 @@ export type Stage = {
   key: string;
   stage: string;
   project: string;
-  vars: Var[];
+  vars: string; // TODO actually a number, but required for InteractiveList type hack
 };
 
 export type Var = {

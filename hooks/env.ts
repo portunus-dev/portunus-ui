@@ -21,7 +21,10 @@ type EnvDispatchType =
   | "editTeam"
   | "addProject"
   | "deleteProject"
-  | "editProject";
+  | "editProject"
+  | "addStage"
+  | "deleteStage"
+  | "editStage";
 type ArrayTypeKey = "teams" | "projects" | "stages";
 type PortunusEntity = Team | Project | Stage;
 type ArrayOptions = PortunusEntity[];
@@ -145,7 +148,6 @@ export const useEnv = (init: ArrayEntity | undefined) => {
       }
 
       if (type === "addProject") {
-        console.log("addProject", payload);
         return {
           ...state,
           project: payload,
@@ -192,6 +194,43 @@ export const useEnv = (init: ArrayEntity | undefined) => {
             ...projects.slice(0, editedProjectIdx),
             update,
             ...projects.slice(editedProjectIdx + 1),
+          ],
+        };
+      }
+
+      if (type === "addStage") {
+        return {
+          ...state,
+          stage: payload,
+          stages: [...state.stages, payload],
+        };
+      }
+
+      if (type === "deleteStage") {
+        // reset chosen state, if it was deleted
+        const stages = state.stages.filter(
+          (stage) => payload.key !== stage.key
+        );
+        return {
+          ...state,
+          stage: state.stage?.key === payload.key ? undefined : state.stage,
+          stages,
+        };
+      }
+
+      if (type === "editStage") {
+        if (!state.stages) return state;
+        const stages = state.stages;
+        const editedStageIdx = stages.findIndex((o) => o.key === payload.key);
+        if (editedStageIdx < 0) return state;
+        const update = { ...stages[editedStageIdx], stage: payload.name };
+        return {
+          ...state,
+          stage: state.stage?.key === payload.key ? update : state.stage,
+          stages: [
+            ...stages.slice(0, editedStageIdx),
+            update,
+            ...stages.slice(editedStageIdx + 1),
           ],
         };
       }
