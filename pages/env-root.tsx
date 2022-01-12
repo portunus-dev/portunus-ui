@@ -194,6 +194,56 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
     teamDispatch({ type: e.target.id, payload: e.target.value });
   };
 
+  const createNewTeam = useCallback(async () => {
+    const { key, name } = await apiRequest("/team", {
+      method: "POST",
+      body: JSON.stringify(getTeamObject()),
+    });
+    return { key, name };
+  }, []);
+
+  const {
+    data: createTeamData,
+    loading: createTeamLoading,
+    error: createTeamError,
+    executeRequest: createTeamExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: createNewTeam,
+  });
+
+  const handleOnCreateTeam = () => createTeamExecuteRequest();
+
+  useEffect(() => {
+    if (createTeamData) {
+      dispatch({ type: "addTeam", payload: createTeamData });
+    }
+  }, [createTeamData]);
+
+  const deleteTeam = useCallback(async (team: Team) => {
+    const { key, name } = await apiRequest("/team", {
+      method: "DELETE",
+      body: JSON.stringify({ team: team.key }),
+    });
+    return { key, name };
+  }, []);
+
+  const {
+    data: deleteTeamData,
+    loading: deleteTeamLoading,
+    error: deleteTeamError,
+    executeRequest: deleteTeamExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: deleteTeam,
+  });
+
+  const handleOnDeleteTeam = (team: Team) => deleteTeamExecuteRequest(team);
+
+  useEffect(() => {
+    if (deleteTeamData) {
+      dispatch({ type: "deleteTeam", payload: deleteTeamData });
+    }
+  }, [deleteTeamData]);
+
   const fetchTeamUserData = useCallback(async (team: Team) => {
     const res = await apiRequest(`users?team=${team.key}`, { method: "GET" });
     const vars = res;
@@ -245,6 +295,7 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
 
   /*
     TODO
+    - new teams break when clicked
     - project form
     - stage form
     - KV management
@@ -388,6 +439,8 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
                 items={env.teams}
                 titleKey="name"
                 onItemClick={handleChooseTeam}
+                onItemRemove={handleOnDeleteTeam}
+                confirmCount={2}
               />
               {!NEXT_PUBLIC_READ_ONLY && (
                 <Box sx={{ display: "flex" }}>
@@ -396,7 +449,12 @@ export default function EnvRoot({ teams, projects, stages }: ArrayEntity) {
                     form={teamForm}
                     onChange={teamOnChange}
                   />
-                  <Button>Add</Button>
+                  <Button
+                    onClick={handleOnCreateTeam}
+                    disabled={createTeamLoading}
+                  >
+                    Add
+                  </Button>
                 </Box>
               )}
             </Grid>
