@@ -12,7 +12,11 @@ const EMPTY_ENV: EnvState = {
 
 const CLEAR_ORDER = ["team", "project", "stage"];
 
-type EnvDispatchType = "loadOptions" | "chooseOption";
+type EnvDispatchType =
+  | "loadOptions"
+  | "chooseOption"
+  | "addTeam"
+  | "deleteTeam";
 type ArrayTypeKey = "teams" | "projects" | "stages";
 type PortunusEntity = Team | Project | Stage;
 type ArrayOptions = PortunusEntity[];
@@ -77,6 +81,28 @@ export const useEnv = (init: ArrayEntity | undefined) => {
           [payload.key]: newValue,
           ...clear,
           ...update,
+        };
+      }
+
+      if (type === "addTeam") {
+        return {
+          ...state,
+          teams: [...state.teams, payload],
+        };
+      }
+
+      if (type === "deleteTeam") {
+        const projects = state.projects.filter((o) => o.team !== payload.key);
+        const removedProjects = state.projects
+          .filter((o) => o.team === payload.key)
+          .map((o) => o.key);
+        return {
+          ...state,
+          teams: state.teams.filter((team) => team.key !== payload.key),
+          projects,
+          stages: state.stages.filter(
+            (stage) => !removedProjects.includes(stage.project)
+          ),
         };
       }
 
