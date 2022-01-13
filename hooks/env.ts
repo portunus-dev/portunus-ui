@@ -234,16 +234,6 @@ export const useEnv = (init: ArrayEntity | undefined) => {
           ],
         };
       }
-
-      //   if (type === "full") {
-      //     // for quick switch or URL?
-      //     return {
-      //       ...state,
-      //       team: payload.team,
-      //       project: payload.project,
-      //       stage: payload.stage,
-      //     };
-      //   }
       return state;
     },
     { ...EMPTY_ENV }
@@ -257,17 +247,3 @@ export const useEnv = (init: ArrayEntity | undefined) => {
 
   return { env, dispatch };
 };
-
-/*
-    pull team/project/stage from URL
-
-    choose team from list
-    choose project from list
-    choose stage from list
-
-    "quick switch" with all the available values
-    TODO
-    how much to load all at once? We could load incrementally, e.g. load Teams, choose Team > load Project & Users, choose Project > load stages
-    OR we could 
-    
-*/
