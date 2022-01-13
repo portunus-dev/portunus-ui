@@ -1,15 +1,18 @@
 import React from "react";
+import { EnvState } from "../utils/types";
+import { EMPTY_ENV, EnvDispatchType } from "./env";
 
 type EnvContext = {
-  team: string;
-  project: string;
-  stage: string;
+  env: EnvState;
+  dispatch: React.Dispatch<{
+    type: EnvDispatchType;
+    payload: any;
+  }>;
 };
 
 const defaultContext: EnvContext = {
-  team: "",
-  project: "",
-  stage: "",
+  env: EMPTY_ENV,
+  dispatch: () => {},
 };
 
-export const context = React.createContext(defaultContext);
+export const EnvContext = React.createContext(defaultContext);

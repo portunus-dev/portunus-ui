@@ -2,7 +2,7 @@ import { Update } from "@mui/icons-material";
 import { useEffect, useReducer } from "react";
 import { EnvState, ArrayEntity, Team, Project, Stage } from "../utils/types";
 
-const EMPTY_ENV: EnvState = {
+export const EMPTY_ENV: EnvState = {
   team: undefined,
   project: undefined,
   stage: undefined,
@@ -11,9 +11,7 @@ const EMPTY_ENV: EnvState = {
   stages: [],
 };
 
-const CLEAR_ORDER = ["team", "project", "stage"];
-
-type EnvDispatchType =
+export type EnvDispatchType =
   | "loadOptions"
   | "chooseOption"
   | "addTeam"
@@ -28,6 +26,8 @@ type EnvDispatchType =
 type ArrayTypeKey = "teams" | "projects" | "stages";
 type PortunusEntity = Team | Project | Stage;
 type ArrayOptions = PortunusEntity[];
+
+const CLEAR_ORDER = ["team", "project", "stage"];
 
 export const useEnv = (init: ArrayEntity | undefined) => {
   const [env, dispatch] = useReducer(
