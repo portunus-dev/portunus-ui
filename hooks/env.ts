@@ -1,7 +1,8 @@
+import { Update } from "@mui/icons-material";
 import { useEffect, useReducer } from "react";
 import { EnvState, ArrayEntity, Team, Project, Stage } from "../utils/types";
 
-const EMPTY_ENV: EnvState = {
+export const EMPTY_ENV: EnvState = {
   team: undefined,
   project: undefined,
   stage: undefined,
@@ -10,12 +11,23 @@ const EMPTY_ENV: EnvState = {
   stages: [],
 };
 
-const CLEAR_ORDER = ["team", "project", "stage"];
-
-type EnvDispatchType = "loadOptions" | "chooseOption";
+export type EnvDispatchType =
+  | "loadOptions"
+  | "chooseOption"
+  | "addTeam"
+  | "deleteTeam"
+  | "editTeam"
+  | "addProject"
+  | "deleteProject"
+  | "editProject"
+  | "addStage"
+  | "deleteStage"
+  | "editStage";
 type ArrayTypeKey = "teams" | "projects" | "stages";
 type PortunusEntity = Team | Project | Stage;
 type ArrayOptions = PortunusEntity[];
+
+const CLEAR_ORDER = ["team", "project", "stage"];
 
 export const useEnv = (init: ArrayEntity | undefined) => {
   const [env, dispatch] = useReducer(
@@ -80,15 +92,148 @@ export const useEnv = (init: ArrayEntity | undefined) => {
         };
       }
 
-      //   if (type === "full") {
-      //     // for quick switch or URL?
-      //     return {
-      //       ...state,
-      //       team: payload.team,
-      //       project: payload.project,
-      //       stage: payload.stage,
-      //     };
-      //   }
+      if (type === "addTeam") {
+        return {
+          ...state,
+          team: payload,
+          project: undefined,
+          stage: undefined,
+          teams: [...state.teams, payload],
+        };
+      }
+
+      if (type === "deleteTeam") {
+        // remove team > project > stage
+        // reset chosen state, if it was deleted
+        const projects = state.projects.filter((o) => o.team !== payload.key);
+        const removedProjects = state.projects
+          .filter((o) => o.team === payload.key)
+          .map((o) => o.key);
+        const stages = state.stages.filter(
+          (stage) => !removedProjects.includes(stage.project)
+        );
+        const removedStages = state.stages
+          .filter((stage) => removedProjects.includes(stage.project))
+          .map((o) => o.key);
+        return {
+          ...state,
+          team: state.team?.key === payload.key ? undefined : state.team,
+          project: removedProjects.includes(state.project?.key || "")
+            ? undefined
+            : state.project,
+          stage: removedStages.includes(state.stage?.key || "")
+            ? undefined
+            : state.stage,
+          teams: state.teams.filter((team) => team.key !== payload.key),
+          projects,
+          stages,
+        };
+      }
+
+      if (type === "editTeam") {
+        if (!state.teams) return state;
+        const teams = state.teams;
+        const editedTeamIdx = teams.findIndex((o) => o.key === payload.key);
+        if (editedTeamIdx < 0) return state;
+        const update = { ...teams[editedTeamIdx], name: payload.name };
+        return {
+          ...state,
+          team: state.team?.key === payload.key ? update : state.team,
+          teams: [
+            ...teams.slice(0, editedTeamIdx),
+            update,
+            ...teams.slice(editedTeamIdx + 1),
+          ],
+        };
+      }
+
+      if (type === "addProject") {
+        return {
+          ...state,
+          project: payload,
+          stage: undefined,
+          projects: [...state.projects, payload],
+        };
+      }
+
+      if (type === "deleteProject") {
+        // remove project > stage
+        // reset chosen state, if it was deleted
+        const stages = state.stages.filter(
+          (stage) => payload.key !== stage.project
+        );
+        const removedStages = state.stages
+          .filter((stage) => payload.key === stage.project)
+          .map((o) => o.key);
+        return {
+          ...state,
+          project:
+            state.project?.key === payload.key ? undefined : state.project,
+          stage: removedStages.includes(state.stage?.key || "")
+            ? undefined
+            : state.stage,
+          projects: state.projects.filter(
+            (project) => project.key !== payload.key
+          ),
+          stages,
+        };
+      }
+
+      if (type === "editProject") {
+        if (!state.projects) return state;
+        const projects = state.projects;
+        const editedProjectIdx = projects.findIndex(
+          (o) => o.key === payload.key
+        );
+        if (editedProjectIdx < 0) return state;
+        const update = { ...projects[editedProjectIdx], project: payload.name };
+        return {
+          ...state,
+          project: state.project?.key === payload.key ? update : state.project,
+          projects: [
+            ...projects.slice(0, editedProjectIdx),
+            update,
+            ...projects.slice(editedProjectIdx + 1),
+          ],
+        };
+      }
+
+      if (type === "addStage") {
+        return {
+          ...state,
+          stage: payload,
+          stages: [...state.stages, payload],
+        };
+      }
+
+      if (type === "deleteStage") {
+        // reset chosen state, if it was deleted
+        const stages = state.stages.filter(
+          (stage) => payload.key !== stage.key
+        );
+        return {
+          ...state,
+          stage: state.stage?.key === payload.key ? undefined : state.stage,
+          stages,
+        };
+      }
+
+      if (type === "editStage") {
+        if (!state.stages) return state;
+        const stages = state.stages;
+        const editedStageIdx = stages.findIndex((o) => o.key === payload.key);
+        if (editedStageIdx < 0) return state;
+        const update = { ...stages[editedStageIdx], stage: payload.name };
+        return {
+          ...state,
+          stage: state.stage?.key === payload.key ? update : state.stage,
+          stages: [
+            ...stages.slice(0, editedStageIdx),
+            update,
+            ...stages.slice(editedStageIdx + 1),
+          ],
+        };
+      }
       return state;
     },
     { ...EMPTY_ENV }
@@ -102,17 +247,3 @@ export const useEnv = (init: ArrayEntity | undefined) => {
 
   return { env, dispatch };
 };
-
-/*
-    pull team/project/stage from URL
-
-    choose team from list
-    choose project from list
-    choose stage from list
-
-    "quick switch" with all the available values
-    TODO
-    how much to load all at once? We could load incrementally, e.g. load Teams, choose Team > load Project & Users, choose Project > load stages
-    OR we could 
-    
-*/
