@@ -39,7 +39,7 @@ const fetchVarData = async ({
   return vars;
 };
 
-export default ({ handleChooseStage }: StageTabProps) => {
+const StageTab = ({ handleChooseStage }: StageTabProps) => {
   const { env } = useContext(EnvContext);
 
   const {
@@ -116,3 +116,5 @@ export default ({ handleChooseStage }: StageTabProps) => {
     </Grid>
   );
 };
+
+export default StageTab;

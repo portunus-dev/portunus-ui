@@ -20,7 +20,7 @@ type TeamTabProps = {
   handleChooseProject: (value: Project) => () => void;
 };
 
-export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
+const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
   const { env } = useContext(EnvContext);
 
   const {
@@ -102,3 +102,5 @@ export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
     </Grid>
   );
 };
+
+export default TeamTab;
