@@ -133,7 +133,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
         {
           key: "",
           value: "",
-          index: (o[o.length - 1] || { index: 0 }).index + 1,
+          index: (o[o.length - 1] || { index: -1 }).index + 1,
         },
       ];
       return update;
