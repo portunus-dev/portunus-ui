@@ -11,6 +11,7 @@ import { Stage } from "../utils/types";
 import { EnvContext } from "../hooks/env-context";
 import { useForm, Field, useRequest } from "../hooks/utils";
 
+import KVEditor from "./kv-editor";
 import InteractiveList from "./InteractiveList";
 import Form from "./Form";
 
@@ -191,13 +192,7 @@ export default ({ handleChooseStage }: StageTabProps) => {
             {varLoading && <CircularProgress />}
             {!varLoading && varError && varError.message}
             {!varLoading && !varError && varData && (
-              <div>
-                {Object.entries(varData.vars).map(([key, value]) => (
-                  <div>
-                    <strong>{key}:</strong> &nbsp; {value}
-                  </div>
-                ))}
-              </div>
+              <KVEditor initialKV={varData.vars} env={env} />
             )}
           </React.Fragment>
         ) : (
