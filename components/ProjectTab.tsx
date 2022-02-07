@@ -28,7 +28,7 @@ export default ({
   const {
     PROJECT_FIELDS,
     projectForm,
-    projectOnChange,
+    handleOnNewProjectChange,
     createProjectLoading,
     handleOnCreateProject,
     handleOnDeleteProject,
@@ -54,7 +54,7 @@ export default ({
               <Form
                 fields={PROJECT_FIELDS}
                 form={projectForm}
-                onChange={projectOnChange}
+                onChange={handleOnNewProjectChange}
               />
               <Button
                 onClick={handleOnCreateProject}

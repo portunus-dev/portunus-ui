@@ -26,7 +26,7 @@ export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
   const {
     TEAM_FIELDS,
     teamForm,
-    teamOnChange,
+    handleOnNewTeamChange,
     createTeamLoading,
     handleOnCreateTeam,
     handleOnDeleteTeam,
@@ -35,7 +35,7 @@ export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
     teamUserLoading,
     teamUserError,
     teamUserExecuteRequest,
-  } = useTeam({ envDispatch: dispatch })
+  } = useTeam({ envDispatch: dispatch });
 
   useEffect(() => {
     if (env.team) {
@@ -61,7 +61,7 @@ export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
             <Form
               fields={TEAM_FIELDS}
               form={teamForm}
-              onChange={teamOnChange}
+              onChange={handleOnNewTeamChange}
             />
             <Button onClick={handleOnCreateTeam} disabled={createTeamLoading}>
               Add

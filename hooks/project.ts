@@ -30,7 +30,7 @@ export const useProject = ({ env, envDispatch }: UseProjectProps) => {
     dispatch: projectDispatch,
   } = useForm(PROJECT_FIELDS);
 
-  const projectOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOnNewProjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     projectDispatch({ type: e.target.id, payload: e.target.value });
   };
 
@@ -118,7 +118,7 @@ export const useProject = ({ env, envDispatch }: UseProjectProps) => {
     projectForm,
     getProjectObject,
     projectDispatch,
-    projectOnChange,
+    handleOnNewProjectChange,
     createNewProject,
     createProjectData,
     createProjectLoading,

@@ -54,6 +54,7 @@ export default ({ handleChooseStage }: StageTabProps) => {
   } = useRequest<any>({
     requestPromise: fetchVarData,
   });
+
   useEffect(() => {
     // though it depends on these 3, only refetch when stage changes
     if (env.team && env.project && env.stage) {

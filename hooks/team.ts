@@ -29,7 +29,7 @@ export const useTeam = ({ envDispatch }: UseTeamProps) => {
     dispatch: teamDispatch,
   } = useForm(TEAM_FIELDS);
 
-  const teamOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOnNewTeamChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     teamDispatch({ type: e.target.id, payload: e.target.value });
   };
 
@@ -129,7 +129,7 @@ export const useTeam = ({ envDispatch }: UseTeamProps) => {
     teamForm,
     getTeamObject,
     teamDispatch,
-    teamOnChange,
+    handleOnNewTeamChange,
     createNewTeam,
     createTeamData,
     createTeamLoading,
