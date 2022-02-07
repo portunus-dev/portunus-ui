@@ -1,52 +1,56 @@
-
 import React, { useMemo, useCallback, useEffect } from "react";
 
 import { apiRequest } from "../utils/api";
 import { Team } from "../utils/types";
 
+import { EnvDispatchType } from "../hooks/env";
 import { useForm, Field, useRequest } from "../hooks/utils";
 
-export const useTeam = ({ envDispatch }) => {
-    const TEAM_FIELDS: Field[] = useMemo(
-        () => [
-          {
-            key: "name",
-            label: "Team Name",
-            validation: "name",
-            materialProps: { variant: "standard", required: true },
-          },
-        ],
-        []
-      );
-    
-      const {
-        form: teamForm,
-        getFormAsObject: getTeamObject,
-        dispatch: teamDispatch,
-      } = useForm(TEAM_FIELDS);
-    
-      const teamOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        teamDispatch({ type: e.target.id, payload: e.target.value });
-      };
-    
-      const createNewTeam = useCallback(async () => {
-        const { key, name } = await apiRequest("/team", {
-          method: "POST",
-          body: JSON.stringify(getTeamObject()),
-        });
-        return { key, name };
-      }, [getTeamObject]);
-    
-      const {
-        data: createTeamData,
-        loading: createTeamLoading,
-        error: createTeamError,
-        executeRequest: createTeamExecuteRequest,
-      } = useRequest<any>({
-        requestPromise: createNewTeam,
-      });
+type UseTeamProps = {
+  envDispatch: React.Dispatch<{ type: EnvDispatchType; payload: any }>;
+};
 
-      const handleOnCreateTeam = () => createTeamExecuteRequest();
+export const useTeam = ({ envDispatch }: UseTeamProps) => {
+  const TEAM_FIELDS: Field[] = useMemo(
+    () => [
+      {
+        key: "name",
+        label: "Team Name",
+        validation: "name",
+        materialProps: { variant: "standard", required: true },
+      },
+    ],
+    []
+  );
+
+  const {
+    form: teamForm,
+    getFormAsObject: getTeamObject,
+    dispatch: teamDispatch,
+  } = useForm(TEAM_FIELDS);
+
+  const teamOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    teamDispatch({ type: e.target.id, payload: e.target.value });
+  };
+
+  const createNewTeam = useCallback(async () => {
+    const { key, name } = await apiRequest("/team", {
+      method: "POST",
+      body: JSON.stringify(getTeamObject()),
+    });
+    return { key, name };
+  }, [getTeamObject]);
+
+  const {
+    data: createTeamData,
+    loading: createTeamLoading,
+    error: createTeamError,
+    executeRequest: createTeamExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: createNewTeam,
+  });
+
+  const handleOnCreateTeam = () => createTeamExecuteRequest();
 
   useEffect(() => {
     if (createTeamData && createTeamData.key && !createTeamError) {
@@ -105,7 +109,6 @@ export const useTeam = ({ envDispatch }) => {
     }
   }, [editTeamData]);
 
-
   const fetchTeamUserData = useCallback(async (team: Team) => {
     const res = await apiRequest(`users?team=${team.key}`, { method: "GET" });
     const vars = res;
@@ -147,5 +150,5 @@ export const useTeam = ({ envDispatch }) => {
     teamUserLoading,
     teamUserError,
     teamUserExecuteRequest,
-  }
-}
+  };
+};
