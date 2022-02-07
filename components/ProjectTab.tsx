@@ -38,7 +38,7 @@ const ProjectTab = ({
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
       {env.team && (
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12}>
           <InteractiveList
             subheader="Manage Projects"
             selected={env.project}
@@ -66,22 +66,6 @@ const ProjectTab = ({
           )}
         </Grid>
       )}
-      <Grid item xs={12} md={8}>
-        {env.team && env.project ? (
-          <React.Fragment>
-            <h2>Current project: {env.project.project}</h2>
-            <InteractiveList
-              subheader="Your Stages"
-              selected={env.stage}
-              items={env.stages.filter((o) => o.project === env.project?.key)}
-              titleKey="stage"
-              onItemClick={handleChooseStage}
-            />
-          </React.Fragment>
-        ) : (
-          <h2>Choose a project</h2>
-        )}
-      </Grid>
     </Grid>
   );
 };

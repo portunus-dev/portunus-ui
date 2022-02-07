@@ -70,7 +70,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
       {env.team && env.project && (
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12}>
           <InteractiveList
             subheader="Manage Stages"
             selected={env.stage}
@@ -100,17 +100,14 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
       )}
 
       <Grid item xs={12} md={8}>
-        {env.team && env.project && env.stage ? (
+        {env.team && env.project && env.stage && (
           <React.Fragment>
-            <h2>Current Stage: {env.stage.stage}</h2>
             {varLoading && <CircularProgress />}
             {!varLoading && varError && varError.message}
             {!varLoading && !varError && varData && (
               <KVEditor initialKV={varData.vars} env={env} />
             )}
           </React.Fragment>
-        ) : (
-          <h2>Choose a stage</h2>
         )}
       </Grid>
     </Grid>

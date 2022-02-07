@@ -60,7 +60,7 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
 
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12}>
         <InteractiveList
           subheader="Manage Teams"
           selected={env.team}
@@ -85,68 +85,56 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
         )}
       </Grid>
 
-      <Grid item xs={12} md={8}>
-        {env.team ? (
-          <React.Fragment>
-            <h2>Current Team: {env.team.name}</h2>
-            <div>
-              {!teamUserLoading && teamUserError && teamUserError.message && (
-                <Alert severity="error">{teamUserError.message}</Alert>
-              )}
-              {!teamUserError && teamUserData && (
-                <Box>
-                  <InteractiveList
-                    subheader="Users"
-                    items={(teamUserData.items as UserType[]) || []}
-                    titleKey="email"
-                    onItemRemove={handleOnRemoveUserFromTeam}
-                    confirmCount={1}
-                  />
-                  {(teamUserLoading ||
-                    addUserToTeamLoading ||
-                    removeUserFromTeamLoading) && <CircularProgress />}
-                  {!addUserToTeamLoading &&
-                    addUserToTeamError &&
-                    addUserToTeamError.message && (
-                      <Alert severity="error">
-                        {addUserToTeamError.message}
-                      </Alert>
-                    )}
-                  {!removeUserFromTeamLoading &&
-                    removeUserFromTeamError &&
-                    removeUserFromTeamError.message && (
-                      <Alert severity="error">
-                        {removeUserFromTeamError.message}
-                      </Alert>
-                    )}
-                  {!NEXT_PUBLIC_READ_ONLY && (
-                    <Box sx={{ display: "flex" }}>
-                      <Form
-                        fields={TEAM_USER_FIELDS}
-                        form={teamUserForm}
-                        onChange={handleOnNewTeamUserChange}
-                      />
-                      <Button
-                        onClick={handleOnAddUserToTeam}
-                        disabled={addUserToTeamLoading}
-                      >
-                        Add
-                      </Button>
-                    </Box>
+      <Grid item xs={12}>
+        {env.team && (
+          <div>
+            {!teamUserLoading && teamUserError && teamUserError.message && (
+              <Alert severity="error">{teamUserError.message}</Alert>
+            )}
+            {!teamUserError && teamUserData && (
+              <Box>
+                <InteractiveList
+                  subheader="Users"
+                  items={(teamUserData.items as UserType[]) || []}
+                  titleKey="email"
+                  onItemRemove={handleOnRemoveUserFromTeam}
+                  confirmCount={1}
+                />
+                {(teamUserLoading ||
+                  addUserToTeamLoading ||
+                  removeUserFromTeamLoading) && <CircularProgress />}
+                {!addUserToTeamLoading &&
+                  addUserToTeamError &&
+                  addUserToTeamError.message && (
+                    <Alert severity="error">
+                      {addUserToTeamError.message}
+                    </Alert>
                   )}
-                </Box>
-              )}
-            </div>
-            <InteractiveList
-              subheader="Your Projects"
-              selected={env.project}
-              items={env.projects.filter((o) => o.team === env.team?.key)}
-              titleKey="project"
-              onItemClick={handleChooseProject}
-            />
-          </React.Fragment>
-        ) : (
-          <h2>Choose a team</h2>
+                {!removeUserFromTeamLoading &&
+                  removeUserFromTeamError &&
+                  removeUserFromTeamError.message && (
+                    <Alert severity="error">
+                      {removeUserFromTeamError.message}
+                    </Alert>
+                  )}
+                {!NEXT_PUBLIC_READ_ONLY && (
+                  <Box sx={{ display: "flex" }}>
+                    <Form
+                      fields={TEAM_USER_FIELDS}
+                      form={teamUserForm}
+                      onChange={handleOnNewTeamUserChange}
+                    />
+                    <Button
+                      onClick={handleOnAddUserToTeam}
+                      disabled={addUserToTeamLoading}
+                    >
+                      Add
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            )}
+          </div>
         )}
       </Grid>
     </Grid>

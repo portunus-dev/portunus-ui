@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
@@ -15,6 +15,9 @@ import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
+
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 import { apiRequest } from "../utils/api";
 import { ArrayEntity, Team, Project, Stage, EnvOption } from "../utils/types";
@@ -73,6 +76,11 @@ const fetchAllData = async () => {
   const allData: ArrayEntity = res;
   return allData;
 }
+interface Expanded {
+  team: boolean;
+  project: boolean;
+  stage: boolean;
+}
 
 export default function EnvRoot() {
   const [tab, setTab] = React.useState(0);
@@ -110,6 +118,11 @@ export default function EnvRoot() {
 
   useEffect(() => {
     setTab(env.stage ? 2 : env.project ? 1 : 0);
+    setExpanded({
+      team: !env.stage && !env.project,
+      project: !env.stage,
+      stage: !!env.project,
+    });
   }, [env]);
 
   /*
@@ -132,7 +145,18 @@ export default function EnvRoot() {
       router.replace("/login");
     }
   }, [isLoggedIn]);
+  
+  const EXPANDED_DEFAULT: Expanded = {
+    team: true,
+    project: false,
+    stage: false,
+  };
+  const [expanded, setExpanded] = useState(EXPANDED_DEFAULT);
+  const handleOnExpand = (type: keyof Expanded) => () => {
+    setExpanded((o) => ({ ...o, [type]: !o[type] }));
+  };
 
+  const COLLAPSED_WIDTH = 2;
   return (
     <EnvContext.Provider value={{ env, dispatch }}>
       <Box sx={{ width: "100%" }}>
@@ -229,36 +253,107 @@ export default function EnvRoot() {
                 <TextField {...params} label="Quick Search" />
               )}
             />
-            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-              <Tabs
-                value={tab}
-                onChange={handleChange}
-                aria-label="basic tabs example"
-                variant="fullWidth"
-                scrollButtons="auto"
-                centered
-              >
-                <Tab label="Team" {...a11yProps(1)} />
-                <Tab label="Project" disabled={!env.team} {...a11yProps(2)} />
-                <Tab label="Stage" disabled={!env.project} {...a11yProps(3)} />
-                {/* <Tab label="Vars" disabled={!env.stage} {...a11yProps(4)} /> */}
-              </Tabs>
+            <Box>
+              <Grid container>
+                <Grid
+                  item
+                  xs={12}
+                  md={
+                    expanded["team"]
+                      ? (12 -
+                          (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
+                          (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
+                        (1 +
+                          (expanded["project"] ? 1 : 0) +
+                          (expanded["stage"] ? 1 : 0))
+                      : COLLAPSED_WIDTH
+                  }
+                >
+                  <Button
+                    endIcon={
+                      expanded["team"] ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                    }
+                    onClick={handleOnExpand("team")}
+                  >
+                    Team
+                  </Button>
+                  {env.team && env.team.name}
+                  {expanded["team"] && (
+                    <TeamTab
+                      handleChooseTeam={handleChooseTeam}
+                      handleChooseProject={handleChooseProject}
+                    />
+                  )}
+                </Grid>
+                <Grid
+                  item
+                  xs={12}
+                  md={
+                    expanded["project"]
+                      ? (12 -
+                          (expanded["team"] ? 0 : COLLAPSED_WIDTH) -
+                          (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
+                        (1 +
+                          (expanded["team"] ? 1 : 0) +
+                          (expanded["stage"] ? 1 : 0))
+                      : COLLAPSED_WIDTH
+                  }
+                >
+                  <Button
+                    disabled={!env.team}
+                    endIcon={
+                      expanded["project"] ? (
+                        <ExpandLessIcon />
+                      ) : (
+                        <ExpandMoreIcon />
+                      )
+                    }
+                    onClick={handleOnExpand("project")}
+                  >
+                    Project
+                  </Button>
+                  {env.project && env.project.project}
+                  {expanded["project"] && (
+                    <ProjectTab
+                      handleChooseProject={handleChooseProject}
+                      handleChooseStage={handleChooseStage}
+                    />
+                  )}
+                </Grid>
+                <Grid
+                  item
+                  xs={12}
+                  md={
+                    expanded["stage"]
+                      ? (12 -
+                          (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
+                          (expanded["team"] ? 0 : COLLAPSED_WIDTH)) /
+                        (1 +
+                          (expanded["project"] ? 1 : 0) +
+                          (expanded["team"] ? 1 : 0))
+                      : COLLAPSED_WIDTH
+                  }
+                >
+                  <Button
+                    disabled={!env.project}
+                    endIcon={
+                      expanded["stage"] ? (
+                        <ExpandLessIcon />
+                      ) : (
+                        <ExpandMoreIcon />
+                      )
+                    }
+                    onClick={handleOnExpand("stage")}
+                  >
+                    Stage
+                  </Button>
+                  {env.stage && env.stage.stage}
+                  {expanded["stage"] && (
+                    <StageTab handleChooseStage={handleChooseStage} />
+                  )}
+                </Grid>
+              </Grid>
             </Box>
-            <TabPanel value={tab} index={0}>
-              <TeamTab
-                handleChooseTeam={handleChooseTeam}
-                handleChooseProject={handleChooseProject}
-              />
-            </TabPanel>
-            <TabPanel value={tab} index={1}>
-              <ProjectTab
-                handleChooseProject={handleChooseProject}
-                handleChooseStage={handleChooseStage}
-              />
-            </TabPanel>
-            <TabPanel value={tab} index={2}>
-              <StageTab handleChooseStage={handleChooseStage} />
-            </TabPanel>
           </Box>
         )}
       </Box>
