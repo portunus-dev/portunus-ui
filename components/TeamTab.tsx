@@ -21,7 +21,7 @@ type TeamTabProps = {
 };
 
 export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
-  const { env, dispatch } = useContext(EnvContext);
+  const { env } = useContext(EnvContext);
 
   const {
     TEAM_FIELDS,
@@ -35,7 +35,7 @@ export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
     teamUserLoading,
     teamUserError,
     teamUserExecuteRequest,
-  } = useTeam({ envDispatch: dispatch });
+  } = useTeam();
 
   useEffect(() => {
     if (env.team) {

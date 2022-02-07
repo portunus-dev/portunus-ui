@@ -1,27 +1,46 @@
-import React, { useMemo, useCallback, useEffect } from "react";
+import React, { useContext, useCallback, useEffect } from "react";
 
 import { apiRequest } from "../utils/api";
 import { Team } from "../utils/types";
 
-import { EnvDispatchType } from "../hooks/env";
+import { EnvContext } from "../hooks/env-context";
 import { useForm, Field, useRequest } from "../hooks/utils";
 
-type UseTeamProps = {
-  envDispatch: React.Dispatch<{ type: EnvDispatchType; payload: any }>;
+const TEAM_FIELDS: Field[] = [
+  {
+    key: "name",
+    label: "Team Name",
+    validation: "name",
+    materialProps: { variant: "standard", required: true },
+  },
+];
+
+const deleteTeam = async (team: Team) => {
+  const { key, name } = await apiRequest("/team", {
+    method: "DELETE",
+    body: JSON.stringify({ team: team.key }),
+  });
+  return { key, name };
 };
 
-export const useTeam = ({ envDispatch }: UseTeamProps) => {
-  const TEAM_FIELDS: Field[] = useMemo(
-    () => [
-      {
-        key: "name",
-        label: "Team Name",
-        validation: "name",
-        materialProps: { variant: "standard", required: true },
-      },
-    ],
-    []
-  );
+const editTeam = async ({ name, team }: { name: string; team: Team }) => {
+  await apiRequest("/team", {
+    method: "PUT",
+    body: JSON.stringify({ team: team.key, name }),
+  });
+  return { key: team.key, name };
+};
+
+const fetchTeamUserData = async (team: Team) => {
+  const res = await apiRequest(`users?team=${team.key}`, {
+    method: "GET",
+  });
+  const vars = res;
+  return vars;
+};
+
+export const useTeam = () => {
+  const { dispatch: envDispatch } = useContext(EnvContext);
 
   const {
     form: teamForm,
@@ -58,14 +77,6 @@ export const useTeam = ({ envDispatch }: UseTeamProps) => {
     }
   }, [createTeamData, createTeamError]);
 
-  const deleteTeam = useCallback(async (team: Team) => {
-    const { key, name } = await apiRequest("/team", {
-      method: "DELETE",
-      body: JSON.stringify({ team: team.key }),
-    });
-    return { key, name };
-  }, []);
-
   const {
     data: deleteTeamData,
     loading: deleteTeamLoading,
@@ -82,14 +93,6 @@ export const useTeam = ({ envDispatch }: UseTeamProps) => {
       envDispatch({ type: "deleteTeam", payload: deleteTeamData });
     }
   }, [deleteTeamData]);
-
-  const editTeam = useCallback(async ({ name, team }) => {
-    await apiRequest("/team", {
-      method: "PUT",
-      body: JSON.stringify({ team: team.key, name }),
-    });
-    return { key: team.key, name };
-  }, []);
 
   const {
     data: editTeamData,
@@ -108,12 +111,6 @@ export const useTeam = ({ envDispatch }: UseTeamProps) => {
       envDispatch({ type: "editTeam", payload: editTeamData });
     }
   }, [editTeamData]);
-
-  const fetchTeamUserData = useCallback(async (team: Team) => {
-    const res = await apiRequest(`users?team=${team.key}`, { method: "GET" });
-    const vars = res;
-    return vars;
-  }, []);
 
   const {
     data: teamUserData,

@@ -1,28 +1,44 @@
-import React, { useMemo, useCallback, useEffect } from "react";
+import React, { useContext, useCallback, useEffect } from "react";
 
 import { apiRequest } from "../utils/api";
-import { Project, EnvState } from "../utils/types";
+import { Project } from "../utils/types";
 
-import { EnvDispatchType } from "../hooks/env";
+import { EnvContext } from "../hooks/env-context";
 import { useForm, Field, useRequest } from "../hooks/utils";
 
-type UseProjectProps = {
-  envDispatch: React.Dispatch<{ type: EnvDispatchType; payload: any }>;
-  env: EnvState;
+const PROJECT_FIELDS: Field[] = [
+  {
+    key: "name",
+    label: "Project Name",
+    validation: "name",
+    materialProps: { variant: "standard", required: true },
+  },
+];
+
+const deleteProject = async (project: Project) => {
+  const { key, name } = await apiRequest("/project", {
+    method: "DELETE",
+    body: JSON.stringify({ project: project.key }),
+  });
+  return { key, name };
 };
 
-export const useProject = ({ env, envDispatch }: UseProjectProps) => {
-  const PROJECT_FIELDS: Field[] = useMemo(
-    () => [
-      {
-        key: "name",
-        label: "Project Name",
-        validation: "name",
-        materialProps: { variant: "standard", required: true },
-      },
-    ],
-    []
-  );
+const editProject = async ({
+  name,
+  project,
+}: {
+  name: string;
+  project: Project;
+}) => {
+  await apiRequest("/project", {
+    method: "PUT",
+    body: JSON.stringify({ project: project.key, name }),
+  });
+  return { key: project.key, name };
+};
+
+export const useProject = () => {
+  const { env, dispatch: envDispatch } = useContext(EnvContext);
 
   const {
     form: projectForm,
@@ -61,14 +77,6 @@ export const useProject = ({ env, envDispatch }: UseProjectProps) => {
     }
   }, [createProjectData, createProjectError]);
 
-  const deleteProject = useCallback(async (project: Project) => {
-    const { key, name } = await apiRequest("/project", {
-      method: "DELETE",
-      body: JSON.stringify({ project: project.key }),
-    });
-    return { key, name };
-  }, []);
-
   const {
     data: deleteProjectData,
     loading: deleteProjectLoading,
@@ -86,14 +94,6 @@ export const useProject = ({ env, envDispatch }: UseProjectProps) => {
       envDispatch({ type: "deleteProject", payload: deleteProjectData });
     }
   }, [deleteProjectData]);
-
-  const editProject = useCallback(async ({ name, project }) => {
-    await apiRequest("/project", {
-      method: "PUT",
-      body: JSON.stringify({ project: project.key, name }),
-    });
-    return { key: project.key, name };
-  }, []);
 
   const {
     data: editProjectData,

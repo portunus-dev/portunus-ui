@@ -1,28 +1,30 @@
-import React, { useMemo, useCallback, useEffect } from "react";
+import React, { useContext, useMemo, useCallback, useEffect } from "react";
 
 import { apiRequest } from "../utils/api";
-import { Stage, EnvState } from "../utils/types";
+import { Stage } from "../utils/types";
 
-import { EnvDispatchType } from "../hooks/env";
+import { EnvContext } from "../hooks/env-context";
 import { useForm, Field, useRequest } from "../hooks/utils";
 
-type UseStageProps = {
-  envDispatch: React.Dispatch<{ type: EnvDispatchType; payload: any }>;
-  env: EnvState;
+const STAGE_FIELDS: Field[] = [
+  {
+    key: "name",
+    label: "Stage Name",
+    validation: "name",
+    materialProps: { variant: "standard", required: true },
+  },
+];
+
+const deleteStage = async (stage: Stage) => {
+  const { key, name } = await apiRequest("/stage", {
+    method: "DELETE",
+    body: JSON.stringify({ stage: stage.key }),
+  });
+  return { key, name };
 };
 
-export const useStage = ({ env, envDispatch }: UseStageProps) => {
-  const STAGE_FIELDS: Field[] = useMemo(
-    () => [
-      {
-        key: "name",
-        label: "Stage Name",
-        validation: "name",
-        materialProps: { variant: "standard", required: true },
-      },
-    ],
-    []
-  );
+export const useStage = () => {
+  const { env, dispatch: envDispatch } = useContext(EnvContext);
 
   const {
     form: stageForm,
@@ -64,14 +66,6 @@ export const useStage = ({ env, envDispatch }: UseStageProps) => {
       envDispatch({ type: "addStage", payload: createStageData });
     }
   }, [createStageData, createStageError]);
-
-  const deleteStage = useCallback(async (stage: Stage) => {
-    const { key, name } = await apiRequest("/stage", {
-      method: "DELETE",
-      body: JSON.stringify({ stage: stage.key }),
-    });
-    return { key, name };
-  }, []);
 
   const {
     data: deleteStageData,
@@ -119,6 +113,8 @@ export const useStage = ({ env, envDispatch }: UseStageProps) => {
   return {
     STAGE_FIELDS,
     handleOnDeleteStage,
+    deleteStageLoading,
+    deleteStageError,
     stageForm,
     handleOnNewStageChange,
     handleOnCreateStage,

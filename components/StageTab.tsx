@@ -1,4 +1,4 @@
-import React, { useMemo, useContext, useCallback, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -6,11 +6,11 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import { apiRequest } from "../utils/api";
-import { Stage } from "../utils/types";
+import { Team, Project, Stage } from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
 import { useStage } from "../hooks/stage";
-import { useForm, Field, useRequest } from "../hooks/utils";
+import { useRequest } from "../hooks/utils";
 
 import KVEditor from "./kv-editor";
 import InteractiveList from "./InteractiveList";
@@ -22,8 +22,25 @@ type StageTabProps = {
   handleChooseStage: (value: Stage) => () => void;
 };
 
+const fetchVarData = async ({
+  team,
+  project,
+  stage,
+}: {
+  team: Team;
+  project: Project;
+  stage: Stage;
+}) => {
+  const res = await apiRequest(
+    `env?team=${team.key}&project=${project.project}&stage=${stage.stage}`,
+    { method: "GET" }
+  );
+  const vars = res;
+  return vars;
+};
+
 export default ({ handleChooseStage }: StageTabProps) => {
-  const { env, dispatch } = useContext(EnvContext);
+  const { env } = useContext(EnvContext);
 
   const {
     STAGE_FIELDS,
@@ -32,19 +49,7 @@ export default ({ handleChooseStage }: StageTabProps) => {
     handleOnNewStageChange,
     handleOnCreateStage,
     createStageLoading,
-  } = useStage({
-    envDispatch: dispatch,
-    env,
-  });
-
-  const fetchVarData = useCallback(async ({ team, project, stage }) => {
-    const res = await apiRequest(
-      `env?team=${team.key}&project=${project.project}&stage=${stage.stage}`,
-      { method: "GET" }
-    );
-    const vars = res;
-    return vars;
-  }, []);
+  } = useStage();
 
   const {
     data: varData,

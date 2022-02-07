@@ -1,4 +1,4 @@
-import React, { useMemo, useContext, useCallback, useEffect } from "react";
+import React, { useContext } from "react";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -23,7 +23,7 @@ export default ({
   handleChooseProject,
   handleChooseStage,
 }: ProjectTabProps) => {
-  const { env, dispatch } = useContext(EnvContext);
+  const { env } = useContext(EnvContext);
 
   const {
     PROJECT_FIELDS,
@@ -33,7 +33,7 @@ export default ({
     handleOnCreateProject,
     handleOnDeleteProject,
     handleOnEditProject,
-  } = useProject({ envDispatch: dispatch, env });
+  } = useProject();
 
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
