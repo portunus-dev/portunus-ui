@@ -37,3 +37,11 @@ export type ArrayEntity = {
 };
 
 export type EnvState = SingleEntity & ArrayEntity;
+
+export type EnvType = "team" | "project" | "stage";
+
+export type EnvOption = {
+  type: EnvType;
+  label: string;
+  path: string;
+} & (Team | Project | Stage);

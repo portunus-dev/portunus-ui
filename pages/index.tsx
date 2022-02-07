@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -8,23 +8,19 @@ import Grid from "@mui/material/Grid";
 
 import AppBar from "@mui/material/AppBar";
 import CircularProgress from "@mui/material/CircularProgress";
-
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
-
 import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 
 import { apiRequest } from "../utils/api";
-import { ArrayEntity, Team, Project, Stage } from "../utils/types";
+import { ArrayEntity, Team, Project, Stage, EnvOption } from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
 import { useEnv } from "../hooks/env";
-import { useForm, Field, useRequest } from "../hooks/utils";
+import { useRequest } from "../hooks/utils";
 
-import InteractiveList from "../components/InteractiveList";
-import Form from "../components/Form";
 import TeamTab from "../components/TeamTab";
 import ProjectTab from "../components/ProjectTab";
 import StageTab from "../components/StageTab";
@@ -68,14 +64,6 @@ const INDENT = {
   stage: 5,
 };
 
-type EnvType = "team" | "project" | "stage";
-
-type EnvOption = {
-  type: EnvType;
-  label: string;
-  path: string;
-} & (Team | Project | Stage);
-
 export default function EnvRoot() {
   const [tab, setTab] = React.useState(0);
 
@@ -97,37 +85,7 @@ export default function EnvRoot() {
     executeRequest();
   }, []);
 
-  const { env, dispatch } = useEnv(data);
-
-  const options: EnvOption[] = useMemo(
-    () =>
-      [
-        ...env.teams
-          .map((o) => [
-            { type: "team" as EnvType, label: o.name, path: "", ...o },
-            ...env.projects
-              .filter((p) => p.team === o.key)
-              .map((p) => [
-                {
-                  type: "project" as EnvType,
-                  label: p.project,
-                  path: o.name + " > ",
-                  ...p,
-                },
-                ...env.stages
-                  .filter((q) => q.project === p.key)
-                  .map((q) => ({
-                    ...q,
-                    type: "stage" as EnvType,
-                    label: q.stage,
-                    path: o.name + " > " + p.project + " > ",
-                  })),
-              ]),
-          ])
-          .flat(),
-      ].flat(),
-    [env]
-  );
+  const { env, options, dispatch } = useEnv(data);
 
   const handleChoose = (key: string, value: string) =>
     dispatch({ type: "chooseOption", payload: { key, value } });
@@ -152,7 +110,6 @@ export default function EnvRoot() {
 
   /*
     TODO
-    - breakout this file
     - admin hide/show
     - unify api responses & Team/Project/Stage e.g. stage .project is project key, but response .project above is name
     - loading state (e.g. disable)

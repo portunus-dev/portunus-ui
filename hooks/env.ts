@@ -1,6 +1,13 @@
-import { Update } from "@mui/icons-material";
-import { useEffect, useReducer } from "react";
-import { EnvState, ArrayEntity, Team, Project, Stage } from "../utils/types";
+import { useEffect, useReducer, useMemo } from "react";
+import {
+  EnvState,
+  ArrayEntity,
+  Team,
+  Project,
+  Stage,
+  EnvOption,
+  EnvType,
+} from "../utils/types";
 
 export const EMPTY_ENV: EnvState = {
   team: undefined,
@@ -23,6 +30,7 @@ export type EnvDispatchType =
   | "addStage"
   | "deleteStage"
   | "editStage";
+
 type ArrayTypeKey = "teams" | "projects" | "stages";
 type PortunusEntity = Team | Project | Stage;
 type ArrayOptions = PortunusEntity[];
@@ -245,5 +253,37 @@ export const useEnv = (init: ArrayEntity | undefined) => {
     }
   }, [init]);
 
-  return { env, dispatch };
+  // flattened array[] of team/project/stage that a user can interact with
+  // grouped by team > project > stage
+  const options: EnvOption[] = useMemo(
+    () =>
+      [
+        ...env.teams
+          .map((o) => [
+            { type: "team" as EnvType, label: o.name, path: "", ...o },
+            ...env.projects
+              .filter((p) => p.team === o.key)
+              .map((p) => [
+                {
+                  type: "project" as EnvType,
+                  label: p.project,
+                  path: o.name + " > ",
+                  ...p,
+                },
+                ...env.stages
+                  .filter((q) => q.project === p.key)
+                  .map((q) => ({
+                    ...q,
+                    type: "stage" as EnvType,
+                    label: q.stage,
+                    path: o.name + " > " + p.project + " > ",
+                  })),
+              ]),
+          ])
+          .flat(),
+      ].flat(),
+    [env]
+  );
+
+  return { env, options, dispatch };
 };
