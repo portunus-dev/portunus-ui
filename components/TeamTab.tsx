@@ -1,15 +1,14 @@
-import React, { useMemo, useContext, useCallback, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import { apiRequest } from "../utils/api";
 import { Team, Project } from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
-import { useForm, Field, useRequest } from "../hooks/utils";
+import { useTeam } from "../hooks/team";
 
 import InteractiveList from "./InteractiveList";
 import Form from "./Form";
@@ -22,119 +21,21 @@ type TeamTabProps = {
 };
 
 export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
-  const { env, dispatch } = useContext(EnvContext);
-  const TEAM_FIELDS: Field[] = useMemo(
-    () => [
-      {
-        key: "name",
-        label: "Team Name",
-        validation: "name",
-        materialProps: { variant: "standard", required: true },
-      },
-    ],
-    []
-  );
+  const { env } = useContext(EnvContext);
 
   const {
-    form: teamForm,
-    getFormAsObject: getTeamObject,
-    dispatch: teamDispatch,
-  } = useForm(TEAM_FIELDS);
-
-  const teamOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    teamDispatch({ type: e.target.id, payload: e.target.value });
-  };
-
-  const createNewTeam = useCallback(async () => {
-    const { key, name } = await apiRequest("/team", {
-      method: "POST",
-      body: JSON.stringify(getTeamObject()),
-    });
-    return { key, name };
-  }, [getTeamObject]);
-
-  const {
-    data: createTeamData,
-    loading: createTeamLoading,
-    error: createTeamError,
-    executeRequest: createTeamExecuteRequest,
-  } = useRequest<any>({
-    requestPromise: createNewTeam,
-  });
-
-  const handleOnCreateTeam = () => createTeamExecuteRequest();
-
-  useEffect(() => {
-    if (createTeamData && createTeamData.key && !createTeamError) {
-      dispatch({ type: "addTeam", payload: createTeamData });
-    }
-  }, [createTeamData, createTeamError]);
-
-  const deleteTeam = useCallback(async (team: Team) => {
-    const { key, name } = await apiRequest("/team", {
-      method: "DELETE",
-      body: JSON.stringify({ team: team.key }),
-    });
-    return { key, name };
-  }, []);
-
-  const {
-    data: deleteTeamData,
-    loading: deleteTeamLoading,
-    error: deleteTeamError,
-    executeRequest: deleteTeamExecuteRequest,
-  } = useRequest<any>({
-    requestPromise: deleteTeam,
-  });
-
-  const handleOnDeleteTeam = (team: Team) => deleteTeamExecuteRequest(team);
-
-  useEffect(() => {
-    if (deleteTeamData) {
-      dispatch({ type: "deleteTeam", payload: deleteTeamData });
-    }
-  }, [deleteTeamData]);
-
-  const editTeam = useCallback(async ({ name, team }) => {
-    await apiRequest("/team", {
-      method: "PUT",
-      body: JSON.stringify({ team: team.key, name }),
-    });
-    return { key: team.key, name };
-  }, []);
-
-  const {
-    data: editTeamData,
-    loading: editTeamLoading,
-    error: editTeamError,
-    executeRequest: editTeamExecuteRequest,
-  } = useRequest<any>({
-    requestPromise: editTeam,
-  });
-
-  const handleOnEditTeam = (newName: string, team: Team) =>
-    editTeamExecuteRequest({ name: newName, team });
-
-  useEffect(() => {
-    if (editTeamData) {
-      dispatch({ type: "editTeam", payload: editTeamData });
-    }
-  }, [editTeamData]);
-
-  const fetchTeamUserData = useCallback(async (team: Team) => {
-    const res = await apiRequest(`users?team=${team.key}`, { method: "GET" });
-    const vars = res;
-    return vars;
-  }, []);
-
-  const {
-    data: teamUserData,
-    loading: teamUserLoading,
-    error: teamUserError,
-    executeRequest: teamUserExecuteRequest,
-  } = useRequest<any>({
-    requestPromise: fetchTeamUserData,
-  });
+    TEAM_FIELDS,
+    teamForm,
+    handleOnNewTeamChange,
+    createTeamLoading,
+    handleOnCreateTeam,
+    handleOnDeleteTeam,
+    handleOnEditTeam,
+    teamUserData,
+    teamUserLoading,
+    teamUserError,
+    teamUserExecuteRequest,
+  } = useTeam();
 
   useEffect(() => {
     if (env.team) {
@@ -160,7 +61,7 @@ export default ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
             <Form
               fields={TEAM_FIELDS}
               form={teamForm}
-              onChange={teamOnChange}
+              onChange={handleOnNewTeamChange}
             />
             <Button onClick={handleOnCreateTeam} disabled={createTeamLoading}>
               Add
