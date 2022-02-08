@@ -19,7 +19,7 @@ type ProjectTabProps = {
   handleChooseStage: (value: Stage) => () => void;
 };
 
-export default ({
+const ProjectTab = ({
   handleChooseProject,
   handleChooseStage,
 }: ProjectTabProps) => {
@@ -85,3 +85,5 @@ export default ({
     </Grid>
   );
 };
+
+export default ProjectTab;
