@@ -1,4 +1,4 @@
-const url = process.env.REACT_PUBLIC_API_HOST || "http://127.0.0.1:8787";
+const url = process.env.NEXT_PUBLIC_API_HOST || "http://127.0.0.1:8787";
 
 export const apiRequest = (urlPath: string, fetchParams: any) => {
   // /ui/env?team=EQ Works&project=enrichdata&stage=dev'
