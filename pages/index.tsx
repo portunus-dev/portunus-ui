@@ -67,18 +67,19 @@ const INDENT = {
   stage: 5,
 };
 
+
+const fetchAllData = async () => {
+  const res = await apiRequest("all", { method: "GET" });
+  const allData: ArrayEntity = res;
+  return allData;
+}
+
 export default function EnvRoot() {
   const [tab, setTab] = React.useState(0);
 
   const handleChange = (_: any, tab: number) => {
     setTab(tab);
   };
-
-  const fetchAllData = useCallback(async () => {
-    const res = await apiRequest("all", { method: "GET" });
-    const allData: ArrayEntity = res;
-    return allData;
-  }, []);
 
   const { data, loading, error, executeRequest } = useRequest<ArrayEntity>({
     requestPromise: fetchAllData,
@@ -123,12 +124,12 @@ export default function EnvRoot() {
     - stop polluting env state with options (i.e. we had path, label & desc)
   */
 
-  const { jwt, logout } = useAuth();
+  const { jwt, logout, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!jwt) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [jwt]);
 
@@ -149,7 +150,12 @@ export default function EnvRoot() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Portunus
             </Typography>
-            <Button color="inherit" onClick={() => logout()}>Logout</Button>
+            <Typography variant="body1" component="div">
+              {(user || {}).email}
+            </Typography>
+            <Button color="inherit" onClick={() => logout()}>
+              Logout
+            </Button>
           </Toolbar>
         </AppBar>
         {loading && (

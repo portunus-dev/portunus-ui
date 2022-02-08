@@ -1,12 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
-import { useAuth } from "../hooks/auth";
+import { useAuth, parseJWT } from "../hooks/auth";
+import { UserType } from "../utils/types";
 
 const Login = () => {
   const [jwt, setJWT] = useState<string>("");
-  const { login } = useAuth();
+  const [user, setUser] = useState<UserType | null>(null);
   const router = useRouter();
+  const { login, jwt: _jwt } = useAuth();
+
+  useEffect(() => { // already logged in
+    if (_jwt) {
+      router.push("/")
+    }
+  }, [_jwt])
+
+  useEffect(() => {
+    const user = parseJWT(jwt);
+    if (!user) {
+      console.warn("Invalid JWT"); // TODO: proper alert mechanism
+    }
+    setUser(user);
+  }, [jwt]);
+
+  if (_jwt) {
+    return (<div>Already logged in, redirecting...</div>)
+  }
 
   return (
     <div>
@@ -17,14 +37,18 @@ const Login = () => {
         value={jwt}
         onChange={({ target: { value } }) => setJWT(value)}
       />
-      <button onClick={() => {
-        login(jwt)
-        router.push("/")
-      }}>
-        Login
-      </button>
+      {(user || {}).email && (
+        <button
+          onClick={() => {
+            login(jwt)
+            router.push("/")
+          }}
+        >
+          Welcome, {(user || {}).email}
+        </button>
+      )}
     </div>
   )
-};
+}
 
 export default Login
