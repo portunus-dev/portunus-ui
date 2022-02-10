@@ -68,7 +68,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
   }, [env.stage]);
 
   return (
-    <Grid container spacing={1} sx={{ p: 3 }}>
+    <Grid container sx={{ p: 1 }}>
       {env.team && env.project && (
         <Grid item xs={12}>
           <InteractiveList

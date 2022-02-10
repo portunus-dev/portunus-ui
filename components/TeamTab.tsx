@@ -59,7 +59,7 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
   }, [env.team, addUserToTeamData, removeUserFromTeamData]);
 
   return (
-    <Grid container spacing={1} sx={{ p: 3 }}>
+    <Grid container sx={{ p: 1 }}>
       <Grid item xs={12}>
         <InteractiveList
           subheader="Manage Teams"

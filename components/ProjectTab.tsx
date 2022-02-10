@@ -36,7 +36,7 @@ const ProjectTab = ({
   } = useProject();
 
   return (
-    <Grid container spacing={1} sx={{ p: 3 }}>
+    <Grid container sx={{ p: 1 }}>
       {env.team && (
         <Grid item xs={12}>
           <InteractiveList

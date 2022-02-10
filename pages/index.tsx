@@ -2,11 +2,10 @@ import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
+import Divider from "@mui/material/Divider";
 
 import AppBar from "@mui/material/AppBar";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -31,56 +30,30 @@ import TeamTab from "../components/TeamTab";
 import ProjectTab from "../components/ProjectTab";
 import StageTab from "../components/StageTab";
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Grid container spacing={1} sx={{ p: 3 }}>
-          {children}
-        </Grid>
-      )}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-}
-
 const INDENT = {
   team: 1,
   project: 3,
   stage: 5,
 };
 
+interface Expanded {
+  team: boolean;
+  project: boolean;
+  stage: boolean;
+}
+
+const EXPANDED_DEFAULT: Expanded = {
+  team: true,
+  project: false,
+  stage: false,
+};
 
 const fetchAllData = async () => {
   const res = await apiRequest("all", { method: "GET" });
   const allData: ArrayEntity = res;
   return allData;
 }
-interface Expanded {
-  team: boolean;
-  project: boolean;
-  stage: boolean;
-}
+
 
 export default function EnvRoot() {
   const [tab, setTab] = React.useState(0);
@@ -120,7 +93,7 @@ export default function EnvRoot() {
     setTab(env.stage ? 2 : env.project ? 1 : 0);
     setExpanded({
       team: !env.stage && !env.project,
-      project: !env.stage,
+      project: env.team && !env.stage,
       stage: !!env.project,
     });
   }, [env]);
@@ -146,17 +119,33 @@ export default function EnvRoot() {
     }
   }, [isLoggedIn]);
   
-  const EXPANDED_DEFAULT: Expanded = {
-    team: true,
-    project: false,
-    stage: false,
-  };
   const [expanded, setExpanded] = useState(EXPANDED_DEFAULT);
   const handleOnExpand = (type: keyof Expanded) => () => {
     setExpanded((o) => ({ ...o, [type]: !o[type] }));
   };
 
   const COLLAPSED_WIDTH = 2;
+  const teamWidth = expanded["team"]
+    ? (12 -
+        (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
+        (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
+      (1 + (expanded["project"] ? 1 : 0) + (expanded["stage"] ? 1 : 0))
+    : COLLAPSED_WIDTH;
+
+  const projectWidth = expanded["project"]
+    ? (12 -
+        (expanded["team"] ? 0 : COLLAPSED_WIDTH) -
+        (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
+      (1 + (expanded["team"] ? 1 : 0) + (expanded["stage"] ? 1 : 0))
+    : COLLAPSED_WIDTH;
+
+  const stageWidth = expanded["stage"]
+    ? (12 -
+        (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
+        (expanded["team"] ? 0 : COLLAPSED_WIDTH)) /
+      (1 + (expanded["project"] ? 1 : 0) + (expanded["team"] ? 1 : 0))
+    : COLLAPSED_WIDTH;
+
   return (
     <EnvContext.Provider value={{ env, dispatch }}>
       <Box sx={{ width: "100%" }}>
@@ -254,26 +243,20 @@ export default function EnvRoot() {
               )}
             />
             <Box>
-              <Grid container>
+              <Grid container wrap="nowrap" spacing={1} sx={{ p: 1 }}>
                 <Grid
                   item
                   xs={12}
-                  md={
-                    expanded["team"]
-                      ? (12 -
-                          (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
-                          (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
-                        (1 +
-                          (expanded["project"] ? 1 : 0) +
-                          (expanded["stage"] ? 1 : 0))
-                      : COLLAPSED_WIDTH
-                  }
+                  md={teamWidth}
+                  sx={{ transition: "all ease 0.5s", p: 1 }}
                 >
                   <Button
+                    variant="outlined"
                     endIcon={
                       expanded["team"] ? <ExpandLessIcon /> : <ExpandMoreIcon />
                     }
                     onClick={handleOnExpand("team")}
+                    fullWidth
                   >
                     Team
                   </Button>
@@ -285,21 +268,15 @@ export default function EnvRoot() {
                     />
                   )}
                 </Grid>
+                <Divider orientation="vertical" flexItem />
                 <Grid
                   item
                   xs={12}
-                  md={
-                    expanded["project"]
-                      ? (12 -
-                          (expanded["team"] ? 0 : COLLAPSED_WIDTH) -
-                          (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
-                        (1 +
-                          (expanded["team"] ? 1 : 0) +
-                          (expanded["stage"] ? 1 : 0))
-                      : COLLAPSED_WIDTH
-                  }
+                  md={projectWidth}
+                  sx={{ transition: "all ease 0.5s", p: 1 }}
                 >
                   <Button
+                    variant="outlined"
                     disabled={!env.team}
                     endIcon={
                       expanded["project"] ? (
@@ -309,6 +286,7 @@ export default function EnvRoot() {
                       )
                     }
                     onClick={handleOnExpand("project")}
+                    fullWidth
                   >
                     Project
                   </Button>
@@ -320,21 +298,15 @@ export default function EnvRoot() {
                     />
                   )}
                 </Grid>
+                <Divider orientation="vertical" flexItem />
                 <Grid
                   item
                   xs={12}
-                  md={
-                    expanded["stage"]
-                      ? (12 -
-                          (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
-                          (expanded["team"] ? 0 : COLLAPSED_WIDTH)) /
-                        (1 +
-                          (expanded["project"] ? 1 : 0) +
-                          (expanded["team"] ? 1 : 0))
-                      : COLLAPSED_WIDTH
-                  }
+                  md={stageWidth}
+                  sx={{ transition: "all ease 0.5s", p: 1 }}
                 >
                   <Button
+                    variant="outlined"
                     disabled={!env.project}
                     endIcon={
                       expanded["stage"] ? (
@@ -344,6 +316,7 @@ export default function EnvRoot() {
                       )
                     }
                     onClick={handleOnExpand("stage")}
+                    fullWidth
                   >
                     Stage
                   </Button>
