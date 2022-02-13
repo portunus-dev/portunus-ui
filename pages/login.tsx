@@ -31,12 +31,12 @@ const validateOTP = (query: any) => { // TODO: do proper type here
 
 const Login = () => {
   const router = useRouter();
-  const { login, jwt: _jwt } = useAuth();
+  const { login, isLoggedIn } = useAuth();
   useEffect(() => { // already logged in
-    if (_jwt) {
+    if (isLoggedIn) {
       router.replace("/")
     }
-  }, [_jwt])
+  }, [isLoggedIn])
 
   const [email, setEmail] = useState<string>(Array.isArray(router.query.user) ? router.query.user[0] : router.query.user || "");
   useEffect(() => {
@@ -57,7 +57,7 @@ const Login = () => {
   const [otpSending, setOTPSending] = useState<boolean>(false);
   const [otpSent, setOTPSent] = useState<boolean>(false);
 
-  if (_jwt) { // there must be a better way to do more seamlessly
+  if (isLoggedIn) { // there must be a better way to do more seamlessly
     return (<div>Already logged in, redirecting...</div>)
   }
 

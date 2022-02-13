@@ -124,14 +124,14 @@ export default function EnvRoot() {
     - stop polluting env state with options (i.e. we had path, label & desc)
   */
 
-  const { jwt, logout, user } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!jwt) {
-      router.push("/login");
+    if (!isLoggedIn) {
+      router.replace("/login");
     }
-  }, [jwt]);
+  }, [isLoggedIn]);
 
   return (
     <EnvContext.Provider value={{ env, dispatch }}>

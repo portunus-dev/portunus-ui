@@ -20,8 +20,6 @@ export const parseJWT = (jwt: string) => {
   }
 }
 
-
-
 /**
  * Hook to get the current user JWT from local storage, and login/logout controls
  */
@@ -39,8 +37,8 @@ export const useAuth = () => {
   }, [jwt]);
 
   return {
-    jwt,
     user,
+    isLoggedIn: !!jwt,
     login: (jwt: string) => setJWT(jwt),
     logout: () => setJWT(''),
   }
