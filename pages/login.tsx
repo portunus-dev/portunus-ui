@@ -38,7 +38,7 @@ const Login = () => {
     }
   }, [isLoggedIn])
 
-  const [email, setEmail] = useState<string>(Array.isArray(router.query.user) ? router.query.user[0] : router.query.user || "");
+  const [email, setEmail] = useState(Array.isArray(router.query.user) ? router.query.user[0] : router.query.user || "");
   useEffect(() => {
     const { user, otp } = router.query;
     if (user && otp) {
@@ -53,9 +53,9 @@ const Login = () => {
     }
   }, [router.query])
 
-  const [otp, setOTP] = useState<string>("");
-  const [otpSending, setOTPSending] = useState<boolean>(false);
-  const [otpSent, setOTPSent] = useState<boolean>(false);
+  const [otp, setOTP] = useState("");
+  const [otpSending, setOTPSending] = useState(false);
+  const [otpSent, setOTPSent] = useState(false);
 
   if (isLoggedIn) { // there must be a better way to do more seamlessly
     return (<div>Already logged in, redirecting...</div>)
