@@ -45,3 +45,10 @@ export type EnvOption = {
   label: string;
   path: string;
 } & (Team | Project | Stage);
+
+export type UserType = {
+  email: string;
+  jwt_uuid: string; // TODO: more specific type for UUID?
+  team: string;
+  iat: number;
+};

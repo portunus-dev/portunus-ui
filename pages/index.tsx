@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
+
+import { useRouter } from "next/router";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -20,6 +22,7 @@ import { ArrayEntity, Team, Project, Stage, EnvOption } from "../utils/types";
 import { EnvContext } from "../hooks/env-context";
 import { useEnv } from "../hooks/env";
 import { useRequest } from "../hooks/utils";
+import { useAuth } from "../hooks/auth";
 
 import TeamTab from "../components/TeamTab";
 import ProjectTab from "../components/ProjectTab";
@@ -64,18 +67,19 @@ const INDENT = {
   stage: 5,
 };
 
+
+const fetchAllData = async () => {
+  const res = await apiRequest("all", { method: "GET" });
+  const allData: ArrayEntity = res;
+  return allData;
+}
+
 export default function EnvRoot() {
   const [tab, setTab] = React.useState(0);
 
   const handleChange = (_: any, tab: number) => {
     setTab(tab);
   };
-
-  const fetchAllData = useCallback(async () => {
-    const res = await apiRequest("all", { method: "GET" });
-    const allData: ArrayEntity = res;
-    return allData;
-  }, []);
 
   const { data, loading, error, executeRequest } = useRequest<ArrayEntity>({
     requestPromise: fetchAllData,
@@ -120,19 +124,14 @@ export default function EnvRoot() {
     - stop polluting env state with options (i.e. we had path, label & desc)
   */
 
-  const [portunusJwt, setPortunusJwt] = useState(
-    (typeof window !== "undefined" && localStorage.getItem("portunus-jwt")) ||
-      ""
-  );
-  const handleOnJwtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPortunusJwt(e.target.value);
-  };
-  const handleOnSetJwt = () => {
-    if (typeof window !== "undefined")
-      localStorage.setItem("portunus-jwt", portunusJwt);
-  };
+  const { isLoggedIn, logout, user } = useAuth();
+  const router = useRouter();
 
-  const { NEXT_PUBLIC_READ_ONLY } = process.env;
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.replace("/login");
+    }
+  }, [isLoggedIn]);
 
   return (
     <EnvContext.Provider value={{ env, dispatch }}>
@@ -151,17 +150,12 @@ export default function EnvRoot() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Portunus
             </Typography>
-            <Box>
-              <TextField
-                variant="standard"
-                value={portunusJwt}
-                onChange={handleOnJwtChange}
-                placeholder="Portunus JWT"
-              />
-              <Button variant="contained" onClick={handleOnSetJwt}>
-                Set JWT
-              </Button>
-            </Box>
+            <Typography variant="body1" component="div">
+              {(user || {}).email}
+            </Typography>
+            <Button color="inherit" onClick={() => logout()}>
+              Logout
+            </Button>
           </Toolbar>
         </AppBar>
         {loading && (
