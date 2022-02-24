@@ -13,6 +13,7 @@ export type Stage = {
   key: string;
   stage: string;
   project: string;
+  team?: string;
   vars: string; // TODO actually a number, but required for InteractiveList type hack
 };
 

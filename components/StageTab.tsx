@@ -11,6 +11,7 @@ import { Team, Project, Stage } from "../utils/types";
 import { EnvContext } from "../hooks/env-context";
 import { useStage } from "../hooks/stage";
 import { useRequest } from "../hooks/utils";
+import { useAuth } from "../hooks/auth";
 
 import KVEditor from "./KVEditor";
 import InteractiveList from "./InteractiveList";
@@ -67,6 +68,16 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
     }
   }, [env.stage]);
 
+  const { jwt } = useAuth();
+  const handleOnCopyPrintEnv = (stage: Stage) => () => {
+    const printEnvEntry = `PORTUNUS_JWT=${jwt}/${
+      stage.team
+    }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
+
+    navigator.clipboard.writeText(printEnvEntry);
+    alert("Copied: " + printEnvEntry);
+  };
+
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
       {env.team && env.project && (
@@ -77,6 +88,8 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
             items={env.stages.filter((o) => o.project === env.project?.key)}
             titleKey="stage"
             onItemClick={handleChooseStage}
+            itemSecondaryAction={handleOnCopyPrintEnv}
+            ItemSecondaryNode={<Button>Print Env</Button>}
             // onItemEdit={handleOnEditStage}
             onItemRemove={handleOnDeleteStage}
             confirmCount={0}
