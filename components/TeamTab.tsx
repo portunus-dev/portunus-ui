@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 
 import { Team, Project, UserType } from "../utils/types";
 
@@ -38,8 +39,11 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
     handleOnAddUserToTeam,
     addUserToTeamData,
     addUserToTeamLoading,
-    removeUserFromTeamData,
+    addUserToTeamError,
     handleOnRemoveUserFromTeam,
+    removeUserFromTeamData,
+    removeUserFromTeamLoading,
+    removeUserFromTeamError,
     TEAM_USER_FIELDS,
     teamUserForm,
     handleOnNewTeamUserChange,
@@ -86,10 +90,11 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
           <React.Fragment>
             <h2>Current Team: {env.team.name}</h2>
             <div>
-              {teamUserLoading && <CircularProgress />}
-              {!teamUserLoading && teamUserError && teamUserError.message}
-              {!teamUserLoading && !teamUserError && teamUserData && (
-                <div>
+              {!teamUserLoading && teamUserError && teamUserError.message && (
+                <Alert severity="error">{teamUserError.message}</Alert>
+              )}
+              {!teamUserError && teamUserData && (
+                <Box>
                   <InteractiveList
                     subheader="Users"
                     items={(teamUserData.items as UserType[]) || []}
@@ -97,6 +102,23 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
                     onItemRemove={handleOnRemoveUserFromTeam}
                     confirmCount={1}
                   />
+                  {(teamUserLoading ||
+                    addUserToTeamLoading ||
+                    removeUserFromTeamLoading) && <CircularProgress />}
+                  {!addUserToTeamLoading &&
+                    addUserToTeamError &&
+                    addUserToTeamError.message && (
+                      <Alert severity="error">
+                        {addUserToTeamError.message}
+                      </Alert>
+                    )}
+                  {!removeUserFromTeamLoading &&
+                    removeUserFromTeamError &&
+                    removeUserFromTeamError.message && (
+                      <Alert severity="error">
+                        {removeUserFromTeamError.message}
+                      </Alert>
+                    )}
                   {!NEXT_PUBLIC_READ_ONLY && (
                     <Box sx={{ display: "flex" }}>
                       <Form
@@ -112,7 +134,7 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
                       </Button>
                     </Box>
                   )}
-                </div>
+                </Box>
               )}
             </div>
             <InteractiveList

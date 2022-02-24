@@ -223,8 +223,11 @@ export const useTeam = () => {
     handleOnAddUserToTeam,
     addUserToTeamData,
     addUserToTeamLoading,
-    removeUserFromTeamData,
+    addUserToTeamError,
     handleOnRemoveUserFromTeam,
+    removeUserFromTeamData,
+    removeUserFromTeamLoading,
+    removeUserFromTeamError,
     TEAM_USER_FIELDS,
     teamUserForm,
   };
