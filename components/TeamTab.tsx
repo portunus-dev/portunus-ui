@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import { Team, Project } from "../utils/types";
+import { Team, Project, UserType } from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
 import { useTeam } from "../hooks/team";
@@ -35,13 +35,24 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
     teamUserLoading,
     teamUserError,
     teamUserExecuteRequest,
+    handleOnAddUserToTeam,
+    addUserToTeamData,
+    addUserToTeamLoading,
+    removeUserFromTeamData,
+    handleOnRemoveUserFromTeam,
+    TEAM_USER_FIELDS,
+    teamUserForm,
+    handleOnNewTeamUserChange,
   } = useTeam();
 
   useEffect(() => {
-    if (env.team) {
+    if (
+      env.team ||
+      (env.team && (addUserToTeamData || removeUserFromTeamData))
+    ) {
       teamUserExecuteRequest(env.team);
     }
-  }, [env.team]);
+  }, [env.team, addUserToTeamData, removeUserFromTeamData]);
 
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
@@ -81,9 +92,26 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
                 <div>
                   <InteractiveList
                     subheader="Users"
-                    items={teamUserData.items || []}
+                    items={(teamUserData.items as UserType[]) || []}
                     titleKey="email"
+                    onItemRemove={handleOnRemoveUserFromTeam}
+                    confirmCount={1}
                   />
+                  {!NEXT_PUBLIC_READ_ONLY && (
+                    <Box sx={{ display: "flex" }}>
+                      <Form
+                        fields={TEAM_USER_FIELDS}
+                        form={teamUserForm}
+                        onChange={handleOnNewTeamUserChange}
+                      />
+                      <Button
+                        onClick={handleOnAddUserToTeam}
+                        disabled={addUserToTeamLoading}
+                      >
+                        Add
+                      </Button>
+                    </Box>
+                  )}
                 </div>
               )}
             </div>

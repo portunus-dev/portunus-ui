@@ -50,5 +50,5 @@ export type UserType = {
   email: string;
   jwt_uuid: string; // TODO: more specific type for UUID?
   team: string;
-  iat: number;
+  // iat: number; TODO: this was causing a conflict with ListItem. Should Review
 };

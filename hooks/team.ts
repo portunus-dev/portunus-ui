@@ -1,7 +1,7 @@
 import React, { useContext, useCallback, useEffect } from "react";
 
 import { apiRequest } from "../utils/api";
-import { Team } from "../utils/types";
+import { Team, UserType } from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
 import { useForm, Field, useRequest } from "../hooks/utils";
@@ -39,8 +39,17 @@ const fetchTeamUserData = async (team: Team) => {
   return vars;
 };
 
+const TEAM_USER_FIELDS: Field[] = [
+  {
+    key: "email",
+    label: "User Email",
+    validation: "email",
+    materialProps: { variant: "standard", required: true },
+  },
+];
+
 export const useTeam = () => {
-  const { dispatch: envDispatch } = useContext(EnvContext);
+  const { dispatch: envDispatch, env } = useContext(EnvContext);
 
   const {
     form: teamForm,
@@ -52,13 +61,16 @@ export const useTeam = () => {
     teamDispatch({ type: e.target.id, payload: e.target.value });
   };
 
-  const createNewTeam = useCallback(async () => {
-    const { key, name } = await apiRequest("/team", {
-      method: "POST",
-      body: JSON.stringify(getTeamObject()),
-    });
-    return { key, name };
-  }, [getTeamObject]);
+  const createNewTeam = useCallback(
+    async (body) => {
+      const { key, name } = await apiRequest("/team", {
+        method: "POST",
+        body: JSON.stringify(getTeamObject()),
+      });
+      return { key, name };
+    },
+    [getTeamObject]
+  );
 
   const {
     data: createTeamData,
@@ -112,6 +124,8 @@ export const useTeam = () => {
     }
   }, [editTeamData]);
 
+  // user management
+  // TODO: isolate these hooks
   const {
     data: teamUserData,
     loading: teamUserLoading,
@@ -120,6 +134,64 @@ export const useTeam = () => {
   } = useRequest<any>({
     requestPromise: fetchTeamUserData,
   });
+
+  const { form: teamUserForm, dispatch: teamUserDispatch } =
+    useForm(TEAM_USER_FIELDS);
+
+  const handleOnNewTeamUserChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    teamUserDispatch({ type: e.target.id, payload: e.target.value });
+  };
+
+  const addUser = useCallback(async () => {
+    if (env.team) {
+      await apiRequest("/user/team", {
+        method: "PUT",
+        body: JSON.stringify({
+          team: env.team.key,
+          userEmail: teamUserForm.email.value,
+        }),
+      });
+      return { key: env.team.key, userEmail: teamUserForm.email.value };
+    }
+  }, [teamUserForm, env.team]);
+
+  const {
+    data: addUserToTeamData,
+    loading: addUserToTeamLoading,
+    error: addUserToTeamError,
+    executeRequest: addUserToTeamExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: addUser,
+  });
+
+  const handleOnAddUserToTeam = () => addUserToTeamExecuteRequest();
+
+  const removeUser = useCallback(
+    async (user: UserType) => {
+      if (env.team) {
+        await apiRequest("/user/team", {
+          method: "DELETE",
+          body: JSON.stringify({ team: env.team.key, userEmail: user.email }),
+        });
+        return { key: env.team.key, userEmail: user.email };
+      }
+    },
+    [env.team]
+  );
+
+  const {
+    data: removeUserFromTeamData,
+    loading: removeUserFromTeamLoading,
+    error: removeUserFromTeamError,
+    executeRequest: removeUserFromTeamExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: removeUser,
+  });
+
+  const handleOnRemoveUserFromTeam = (user: UserType) =>
+    removeUserFromTeamExecuteRequest(user);
 
   return {
     TEAM_FIELDS,
@@ -147,5 +219,13 @@ export const useTeam = () => {
     teamUserLoading,
     teamUserError,
     teamUserExecuteRequest,
+    handleOnNewTeamUserChange,
+    handleOnAddUserToTeam,
+    addUserToTeamData,
+    addUserToTeamLoading,
+    removeUserFromTeamData,
+    handleOnRemoveUserFromTeam,
+    TEAM_USER_FIELDS,
+    teamUserForm,
   };
 };
