@@ -12,7 +12,7 @@ import { EnvContext } from "../hooks/env-context";
 import { useStage } from "../hooks/stage";
 import { useRequest } from "../hooks/utils";
 
-import KVEditor from "./kv-editor";
+import KVEditor from "./KVEditor";
 import InteractiveList from "./InteractiveList";
 import Form from "./Form";
 
