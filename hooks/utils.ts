@@ -121,7 +121,7 @@ const VALIDATORS: Validators = {
 export type Field = {
   key: string;
   defaultValue?: any;
-  // ====[TODO] this usage feels silly. I thought it would give m
+  // ====[TODO] this usage feels silly. I thought it would streamline some things
   validation?: keyof Validators | ((o: any) => boolean);
   label?: string;
   type?: string;
