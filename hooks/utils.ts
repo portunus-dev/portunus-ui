@@ -118,13 +118,26 @@ const VALIDATORS: Validators = {
   // password: e.g. strength calculation, check to see if it matches old pw
 };
 
+type DefaultInit = {
+  value?: any;
+  invalid?: boolean;
+  disabled?: boolean;
+  hide?: boolean;
+};
+
+// TODO: can TS enforce the value of a Field<T> while having a flexible Field[]
 export type Field = {
   key: string;
-  defaultValue?: any;
+  defaults?: DefaultInit;
   // ====[TODO] this usage feels silly. I thought it would streamline some things
-  validation?: keyof Validators | ((o: any) => boolean);
+  invalid?:
+    | keyof Validators
+    | ((value: any, form: FormReducerState) => boolean);
+  disabled?: (value: any, form: FormReducerState) => boolean;
+  hide?: (value: any, form: FormReducerState) => boolean;
   label?: string;
   type?: string;
+  // for radio/select
   options?: {
     value: string;
     label: string;
@@ -139,6 +152,8 @@ export type FormReducerState = {
   [key: string]: {
     value: any;
     invalid?: boolean;
+    hide?: boolean;
+    disabled?: boolean;
   };
 };
 
@@ -151,7 +166,7 @@ const fieldsToFormObject = (
   fields.reduce(
     (agg, field) => ({
       ...agg,
-      [field.key]: state[field.key] || { value: field.defaultValue || null },
+      [field.key]: state[field.key] || { ...(field.defaults || {}) },
     }),
     {}
   );
@@ -185,6 +200,37 @@ export const useForm = (fields: Field[]) => {
         return fieldsToFormObject(state, fields);
       }
 
+      // external controls for form states
+      if (type === "invalid") {
+        return {
+          ...state,
+          [payload.key]: {
+            ...state[payload.key],
+            invalid: payload.value,
+          },
+        };
+      }
+
+      if (type === "hide") {
+        return {
+          ...state,
+          [payload.key]: {
+            ...state[payload.key],
+            hide: payload.value,
+          },
+        };
+      }
+
+      if (type === "disabled") {
+        return {
+          ...state,
+          [payload.key]: {
+            ...state[payload.key],
+            disabled: payload.value,
+          },
+        };
+      }
+
       // default case is type === field.key
       const field = fields.find((o) => o.key === type);
 
@@ -193,21 +239,49 @@ export const useForm = (fields: Field[]) => {
         return state;
       }
 
-      // ====[NOTE] provide a function or a key in VALIDATORS; defaults to valid
-      let validationFn;
-      if (typeof field.validation === "function") {
-        validationFn = field.validation;
-      } else if (field.validation && VALIDATORS[field.validation]) {
-        validationFn = VALIDATORS[field.validation];
-      }
-
-      return {
+      const update: FormReducerState = {
         ...state,
-        [type]: {
-          value: payload,
-          invalid: validationFn ? validationFn(payload) : false,
-        },
+        [type]: { ...state[type], value: payload },
       };
+
+      // check disabled, hide & invalid for every key
+      const newState = Object.entries(update).reduce((agg, [k, v]) => {
+        const field = fields.find((o) => o.key === k);
+        if (!field) return agg;
+
+        const invalid =
+          typeof field.invalid === "function"
+            ? field.invalid(v.value, state)
+            : field.invalid && VALIDATORS[field.invalid]
+            ? VALIDATORS[field.invalid](v.value, state)
+            : v.invalid !== undefined
+            ? v.invalid
+            : field.defaults?.invalid;
+
+        const hide =
+          typeof field.hide === "function"
+            ? field.hide(v.value, state)
+            : v.hide !== undefined
+            ? v.hide
+            : field.defaults?.hide;
+
+        const disabled =
+          typeof field.disabled === "function"
+            ? field.disabled(v.value, state)
+            : v.disabled !== undefined
+            ? v.disabled
+            : field.defaults?.disabled;
+
+        agg[k] = {
+          ...v,
+          invalid,
+          hide,
+          disabled,
+        };
+        return agg;
+      }, {} as FormReducerState);
+
+      return newState;
     },
     fieldsToFormObject({}, fields)
   );

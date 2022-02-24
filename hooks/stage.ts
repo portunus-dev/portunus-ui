@@ -10,7 +10,7 @@ const STAGE_FIELDS: Field[] = [
   {
     key: "name",
     label: "Stage Name",
-    validation: "name",
+    invalid: "name",
     materialProps: { variant: "standard", required: true },
   },
 ];
