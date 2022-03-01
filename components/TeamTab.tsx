@@ -56,7 +56,7 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
     ) {
       teamUserExecuteRequest(env.team);
     }
-  }, [env.team, addUserToTeamData, removeUserFromTeamData]);
+  }, [env.team, teamUserExecuteRequest, addUserToTeamData, removeUserFromTeamData]);
 
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>

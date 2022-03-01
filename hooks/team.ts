@@ -43,7 +43,7 @@ const TEAM_USER_FIELDS: Field[] = [
   {
     key: "email",
     label: "User Email",
-    validation: "email",
+    invalid: "email",
     materialProps: { variant: "standard", required: true },
   },
 ];

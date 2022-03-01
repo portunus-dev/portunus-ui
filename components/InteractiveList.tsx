@@ -27,6 +27,8 @@ type ListProps<T extends Object> = {
   descriptionKey?: keyof T;
   subheader?: string;
   onItemClick?: (i: T) => (e: React.MouseEvent<HTMLDivElement>) => void;
+  itemSecondaryAction?: (i: T) => (e: React.MouseEvent<HTMLDivElement>) => void;
+  ItemSecondaryNode?: React.ReactElement;
   onItemEdit?: (update: string, i: T) => void;
   onItemRemove?: (i: T) => void;
   confirmCount?: number;
@@ -49,16 +51,18 @@ function InteractiveList<ListItem extends StringObject>({
   titleKey = "title" as keyof ListItem,
   descriptionKey = "descripton" as keyof ListItem,
   onItemClick,
+  itemSecondaryAction,
+  ItemSecondaryNode,
   onItemEdit,
   onItemRemove,
-  confirmCount,
+  confirmCount = 0,
 }: ListProps<ListItem>) {
   const [confirm, setConfirm] = useState(0);
   const [deleteKey, setDeleteKey] = useState("");
   const handleOnDelete = (o: ListItem) => () => {
     const key = o[keyKey];
-    if (key === deleteKey) {
-      if (confirm === 0 || confirm < confirmCount + 1) {
+    if (key === deleteKey || confirmCount <= 0) {
+      if (confirmCount > 0 && confirm < confirmCount + 1) {
         setConfirm((o) => o + 1);
       } else if (onItemRemove) {
         onItemRemove(o);
@@ -117,43 +121,50 @@ function InteractiveList<ListItem extends StringObject>({
           selected={o === selected}
           key={o[keyKey]}
           secondaryAction={
-            !NEXT_PUBLIC_READ_ONLY && (
-              <Box sx={{ display: "flex" }}>
-                {onItemEdit && deleteKey !== o[keyKey] && (
-                  <Box>
-                    {editingKey === o[keyKey] ? (
-                      <React.Fragment>
-                        <Button onClick={handleOnSave(o)}>Save</Button>
-                        <Button onClick={handleOnEditCancel}>Cancel</Button>
-                      </React.Fragment>
-                    ) : (
-                      <Button onClick={handleOnEdit(o)}>Edit</Button>
-                    )}
-                  </Box>
-                )}
-                {onItemRemove && editingKey !== o[keyKey] && (
-                  <React.Fragment>
-                    <Button
-                      variant={
-                        deleteKey === o.key && confirm === confirmCount + 1
-                          ? "contained"
-                          : "outlined"
-                      }
-                      onClick={handleOnDelete(o)}
-                    >
-                      {deleteKey !== o.key ||
-                      confirm === 0 ||
-                      (confirm === confirmCount + 1 && deleteKey === o.key)
-                        ? "Delete"
-                        : `Are you sure? (${confirm - 1} / ${confirmCount})`}
-                    </Button>
-                    {confirm !== 0 && deleteKey === o.key && (
-                      <Button onClick={handleOnDeleteCancel}>Cancel</Button>
-                    )}
-                  </React.Fragment>
-                )}
-              </Box>
-            )
+            <Box sx={{ display: "flex" }}>
+              {itemSecondaryAction &&
+                ItemSecondaryNode &&
+                React.cloneElement(ItemSecondaryNode, {
+                  onClick: itemSecondaryAction(o),
+                })}
+              {!NEXT_PUBLIC_READ_ONLY && (
+                <React.Fragment>
+                  {onItemEdit && deleteKey !== o[keyKey] && (
+                    <Box>
+                      {editingKey === o[keyKey] ? (
+                        <React.Fragment>
+                          <Button onClick={handleOnSave(o)}>Save</Button>
+                          <Button onClick={handleOnEditCancel}>Cancel</Button>
+                        </React.Fragment>
+                      ) : (
+                        <Button onClick={handleOnEdit(o)}>Edit</Button>
+                      )}
+                    </Box>
+                  )}
+                  {onItemRemove && editingKey !== o[keyKey] && (
+                    <React.Fragment>
+                      <Button
+                        variant={
+                          deleteKey === o.key && confirm === confirmCount + 1
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={handleOnDelete(o)}
+                      >
+                        {deleteKey !== o.key ||
+                        confirm === 0 ||
+                        (confirm === confirmCount + 1 && deleteKey === o.key)
+                          ? "Delete"
+                          : `Are you sure? (${confirm - 1} / ${confirmCount})`}
+                      </Button>
+                      {confirm !== 0 && deleteKey === o.key && (
+                        <Button onClick={handleOnDeleteCancel}>Cancel</Button>
+                      )}
+                    </React.Fragment>
+                  )}
+                </React.Fragment>
+              )}
+            </Box>
           }
         >
           {editingKey === o[keyKey] ? (

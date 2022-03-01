@@ -1,9 +1,10 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import Snackbar from "@mui/material/Snackbar";
 
 import { apiRequest } from "../utils/api";
 import { Team, Project, Stage } from "../utils/types";
@@ -11,8 +12,9 @@ import { Team, Project, Stage } from "../utils/types";
 import { EnvContext } from "../hooks/env-context";
 import { useStage } from "../hooks/stage";
 import { useRequest } from "../hooks/utils";
+import { useAuth } from "../hooks/auth";
 
-import KVEditor from "./kv-editor";
+import KVEditor from "./KVEditor";
 import InteractiveList from "./InteractiveList";
 import Form from "./Form";
 
@@ -61,11 +63,24 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
   });
 
   useEffect(() => {
-    // though it depends on these 3, only refetch when stage changes
     if (env.team && env.project && env.stage) {
       varExecuteRequest(env);
     }
-  }, [env.stage]);
+  }, [env, varExecuteRequest]);
+
+  const { jwt } = useAuth();
+
+  const [open, setOpen] = useState(false)
+  const handleOnClose = () => setOpen(false)
+  const handleOnCopyPrintEnv = (stage: Stage) => () => {
+    const printEnvEntry = `PORTUNUS_JWT=${jwt}/${
+      stage.team
+    }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
+    
+    navigator.clipboard.writeText(printEnvEntry).then(() => {
+      setOpen(true)
+    });
+  };
 
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
@@ -77,6 +92,8 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
             items={env.stages.filter((o) => o.project === env.project?.key)}
             titleKey="stage"
             onItemClick={handleChooseStage}
+            itemSecondaryAction={handleOnCopyPrintEnv}
+            ItemSecondaryNode={<Button>Print Env</Button>}
             // onItemEdit={handleOnEditStage}
             onItemRemove={handleOnDeleteStage}
             confirmCount={0}
@@ -113,6 +130,12 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
           <h2>Choose a stage</h2>
         )}
       </Grid>
+      <Snackbar
+        open={open}
+        autoHideDuration={2000}
+        onClose={handleOnClose}
+        message="Copied!"
+      />
     </Grid>
   );
 };
