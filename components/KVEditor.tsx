@@ -12,6 +12,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 // import AddIcon from "@mui/icons-material/Add";
 
 import JSONInput from "react-json-editor-ajrm";
+import locale from "../locale/en.js";
 
 import { useRequest } from "../hooks/utils";
 import { EnvState } from "../utils/types";
@@ -197,7 +198,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
       setEditing(false);
       setJsonEdit(false);
     }
-  }, [varData, varError, varLoading]);
+  }, [varData, varError, varLoading, workingKV]);
 
   const noChanges =
     changes &&
@@ -217,6 +218,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
                 height="200px"
                 confirmGood={false}
                 theme="light_mitsuketa_tribute"
+                locale={locale}
               />
             </Box>
           ) : (

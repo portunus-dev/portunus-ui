@@ -3,10 +3,6 @@ import { Team, Project, Stage } from "./types";
 const TEAMS = ["EQ Works", "Portunus"];
 const PROJECTS = ["Snoke", "CyberPunk"];
 const STAGES = ["dev", "prod"];
-const VARS = [
-  { key: "TOKEN", value: "abcdefg", secret: true },
-  { key: "BANANAS", value: 10, secret: false },
-];
 
 export const generateTestEnv = () => {
   return TEAMS.reduce(
@@ -28,8 +24,8 @@ export const generateTestEnv = () => {
           agg.stages.push({
             stage: uniqueStage,
             project: projectKey,
+            team: teamKey,
             key: stageKey,
-            vars: VARS,
           });
         });
       });

@@ -25,6 +25,7 @@
   "devDependencies": {
     "@types/node": "^17.0.15",
     "@types/react": "latest",
+    "@types/react-json-editor-ajrm": "^2.5.2",
     "@types/styled-components": "latest",
     "babel-plugin-styled-components": "latest",
     "eslint": "^8.7.0",
