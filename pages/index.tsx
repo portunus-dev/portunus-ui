@@ -170,12 +170,13 @@ export default function EnvRoot() {
               // TS only allows you to access shared properties when you spread objects and use (A | B) to catch them
               return options.filter(
                 (o) =>
+                  o &&
                   o.key.toLowerCase().indexOf(lc) >= 0 ||
                   o.path.toLowerCase().indexOf(lc) >= 0 ||
-                  (o.name && o.name.toLowerCase().indexOf(lc) >= 0) ||
-                  (o.team && o.team.toLowerCase().indexOf(lc) >= 0) ||
-                  (o.project && o.project.toLowerCase().indexOf(lc) >= 0) ||
-                  (o.stage && o.stage.toLowerCase().indexOf(lc) >= 0)
+                  ((o as Team).name && (o as Team).name.toLowerCase().indexOf(lc) >= 0) ||
+                  ((o as (Project | Stage)).team && (o as (Project | Stage)).team.toLowerCase().indexOf(lc) >= 0) ||
+                  ((o as (Project | Stage)).project && (o as (Project | Stage)).project.toLowerCase().indexOf(lc) >= 0) ||
+                  ((o as Stage).stage && (o as Stage).stage.toLowerCase().indexOf(lc) >= 0)
               );
             }}
             //   groupBy={(option: any) => option.type}

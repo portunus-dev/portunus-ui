@@ -27,8 +27,8 @@ type ListProps<T extends Object> = {
   descriptionKey?: keyof T;
   subheader?: string;
   onItemClick?: (i: T) => (e: React.MouseEvent<HTMLDivElement>) => void;
-  itemSecondaryAction: (i: T) => (e: React.MouseEvent<HTMLDivElement>) => void;
-  ItemSecondaryNode: React.ReactElement;
+  itemSecondaryAction?: (i: T) => (e: React.MouseEvent<HTMLDivElement>) => void;
+  ItemSecondaryNode?: React.ReactElement;
   onItemEdit?: (update: string, i: T) => void;
   onItemRemove?: (i: T) => void;
   confirmCount?: number;
@@ -55,7 +55,7 @@ function InteractiveList<ListItem extends StringObject>({
   ItemSecondaryNode,
   onItemEdit,
   onItemRemove,
-  confirmCount,
+  confirmCount = -1,
 }: ListProps<ListItem>) {
   const [confirm, setConfirm] = useState(0);
   const [deleteKey, setDeleteKey] = useState("");
