@@ -9,12 +9,13 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import Snackbar from "@mui/material/Snackbar";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 import { apiRequest } from "../utils/api";
-import { ArrayEntity, Team, Project, Stage, EnvOption } from "../utils/types";
+import { ArrayEntity, Team, Project, Stage, EnvOption, Toast } from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
 import { useEnv } from "../hooks/env";
@@ -123,8 +124,16 @@ export default function EnvRoot() {
       (1 + (expanded["project"] ? 1 : 0) + (expanded["team"] ? 1 : 0))
     : COLLAPSED_WIDTH;
 
+  const [open, setOpen] = useState(false)
+  const handleOnClose = () => setOpen(false)
+  const [toast, setToastContent] = useState({ content: null, action: null, duration: 3000 } as Toast)
+  const setToast = (toast: Toast) => {
+    setToastContent(toast)
+    setOpen(true)
+  }
+
   return (
-    <EnvContext.Provider value={{ env, dispatch }}>
+    <EnvContext.Provider value={{ env, dispatch, setToast }}>
       {loading && (
         <Box sx={{ display: "flex" }}>
           <CircularProgress />
@@ -266,6 +275,15 @@ export default function EnvRoot() {
           </Box>
         </Box>
       )}
+      <Snackbar
+        open={open}
+        onClose={handleOnClose}
+        autoHideDuration={toast.duration}
+        action={toast.action}
+        message={typeof toast.content === "string" ? toast.content : null}
+      >
+        {typeof toast.content !== "string" ? toast.content : undefined}
+      </Snackbar>
     </EnvContext.Provider>
   );
 }

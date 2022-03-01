@@ -4,7 +4,6 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-import Snackbar from "@mui/material/Snackbar";
 
 import { apiRequest } from "../utils/api";
 import { Team, Project, Stage } from "../utils/types";
@@ -42,7 +41,7 @@ const fetchVarData = async ({
 };
 
 const StageTab = ({ handleChooseStage }: StageTabProps) => {
-  const { env } = useContext(EnvContext);
+  const { env, setToast } = useContext(EnvContext);
 
   const {
     STAGE_FIELDS,
@@ -70,15 +69,13 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
 
   const { jwt } = useAuth();
 
-  const [open, setOpen] = useState(false)
-  const handleOnClose = () => setOpen(false)
   const handleOnCopyPrintEnv = useCallback((stage: Stage) => () => {
     const printEnvEntry = `PORTUNUS_TOKEN=${jwt}/${
       stage.team
     }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
     
     navigator.clipboard.writeText(printEnvEntry).then(() => {
-      setOpen(true)
+      setToast({ content: "Copied!", duration: 1500 })
     });
   }, [jwt]);
 
@@ -127,12 +124,6 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
           </React.Fragment>
         )}
       </Grid>
-      <Snackbar
-        open={open}
-        autoHideDuration={2000}
-        onClose={handleOnClose}
-        message="Copied!"
-      />
     </Grid>
   );
 };

@@ -6,7 +6,6 @@ import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 
 import KeyIcon from "@mui/icons-material/Key";
 
@@ -23,13 +22,19 @@ import { useAuth } from "../hooks/auth";
 export default function MyApp(props: AppProps) {
   const { Component, pageProps } = props;
   const router = useRouter();
-  const { isLoggedIn, user, logout } = useAuth();
+
+  const { isLoggedIn, user, logout, refresh } = useAuth("_app");
 
   useEffect(() => {
     if (!isLoggedIn) {
       router.replace("/login");
     }
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    refresh()
+  }, [router.query])
+  
   return (
     <React.Fragment>
       <Head>

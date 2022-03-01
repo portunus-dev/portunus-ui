@@ -52,3 +52,5 @@ export type UserType = {
   team: string;
   // iat: number; TODO: this was causing a conflict with ListItem. Should Review
 };
+
+export type Toast = { content: React.ReactElement | string, action?: React.ReactElement, duration?: number }
