@@ -1,9 +1,10 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import Snackbar from "@mui/material/Snackbar";
 
 import { apiRequest } from "../utils/api";
 import { Team, Project, Stage } from "../utils/types";
@@ -68,13 +69,17 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
   }, [env, varExecuteRequest]);
 
   const { jwt } = useAuth();
+
+  const [open, setOpen] = useState(false)
+  const handleOnClose = () => setOpen(false)
   const handleOnCopyPrintEnv = (stage: Stage) => () => {
     const printEnvEntry = `PORTUNUS_JWT=${jwt}/${
       stage.team
     }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
-
-    navigator.clipboard.writeText(printEnvEntry);
-    alert("Copied: " + printEnvEntry);
+    
+    navigator.clipboard.writeText(printEnvEntry).then(() => {
+      setOpen(true)
+    });
   };
 
   return (
@@ -125,6 +130,12 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
           <h2>Choose a stage</h2>
         )}
       </Grid>
+      <Snackbar
+        open={open}
+        autoHideDuration={2000}
+        onClose={handleOnClose}
+        message="Copied!"
+      />
     </Grid>
   );
 };
