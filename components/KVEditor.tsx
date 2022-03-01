@@ -198,7 +198,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
       setEditing(false);
       setJsonEdit(false);
     }
-  }, [varData, varError, varLoading]);
+  }, [varData, varError, varLoading, workingKV]);
 
   const noChanges =
     changes &&

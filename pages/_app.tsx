@@ -26,7 +26,7 @@ export default function MyApp(props: AppProps) {
     if (!isLoggedIn) {
       router.replace("/login");
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, router]);
   return (
     <React.Fragment>
       <Head>

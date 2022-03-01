@@ -56,7 +56,7 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
     ) {
       teamUserExecuteRequest(env.team);
     }
-  }, [env.team, addUserToTeamData, removeUserFromTeamData]);
+  }, [env.team, teamUserExecuteRequest, addUserToTeamData, removeUserFromTeamData]);
 
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
@@ -69,7 +69,6 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
           onItemClick={handleChooseTeam}
           onItemRemove={handleOnDeleteTeam}
           onItemEdit={handleOnEditTeam}
-          confirmCount={2}
         />
         {!NEXT_PUBLIC_READ_ONLY && (
           <Box sx={{ display: "flex" }}>

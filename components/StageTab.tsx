@@ -62,11 +62,10 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
   });
 
   useEffect(() => {
-    // though it depends on these 3, only refetch when stage changes
     if (env.team && env.project && env.stage) {
       varExecuteRequest(env);
     }
-  }, [env.stage]);
+  }, [env, varExecuteRequest]);
 
   const { jwt } = useAuth();
   const handleOnCopyPrintEnv = (stage: Stage) => () => {
