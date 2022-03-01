@@ -4,8 +4,9 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 
-import { Team, Project } from "../utils/types";
+import { Team, Project, UserType } from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
 import { useTeam } from "../hooks/team";
@@ -35,13 +36,27 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
     teamUserLoading,
     teamUserError,
     teamUserExecuteRequest,
+    handleOnAddUserToTeam,
+    addUserToTeamData,
+    addUserToTeamLoading,
+    addUserToTeamError,
+    handleOnRemoveUserFromTeam,
+    removeUserFromTeamData,
+    removeUserFromTeamLoading,
+    removeUserFromTeamError,
+    TEAM_USER_FIELDS,
+    teamUserForm,
+    handleOnNewTeamUserChange,
   } = useTeam();
 
   useEffect(() => {
-    if (env.team) {
+    if (
+      env.team ||
+      (env.team && (addUserToTeamData || removeUserFromTeamData))
+    ) {
       teamUserExecuteRequest(env.team);
     }
-  }, [env.team]);
+  }, [env.team, addUserToTeamData, removeUserFromTeamData]);
 
   return (
     <Grid container spacing={1} sx={{ p: 3 }}>
@@ -75,16 +90,51 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
           <React.Fragment>
             <h2>Current Team: {env.team.name}</h2>
             <div>
-              {teamUserLoading && <CircularProgress />}
-              {!teamUserLoading && teamUserError && teamUserError.message}
-              {!teamUserLoading && !teamUserError && teamUserData && (
-                <div>
+              {!teamUserLoading && teamUserError && teamUserError.message && (
+                <Alert severity="error">{teamUserError.message}</Alert>
+              )}
+              {!teamUserError && teamUserData && (
+                <Box>
                   <InteractiveList
                     subheader="Users"
-                    items={teamUserData.items || []}
+                    items={(teamUserData.items as UserType[]) || []}
                     titleKey="email"
+                    onItemRemove={handleOnRemoveUserFromTeam}
+                    confirmCount={1}
                   />
-                </div>
+                  {(teamUserLoading ||
+                    addUserToTeamLoading ||
+                    removeUserFromTeamLoading) && <CircularProgress />}
+                  {!addUserToTeamLoading &&
+                    addUserToTeamError &&
+                    addUserToTeamError.message && (
+                      <Alert severity="error">
+                        {addUserToTeamError.message}
+                      </Alert>
+                    )}
+                  {!removeUserFromTeamLoading &&
+                    removeUserFromTeamError &&
+                    removeUserFromTeamError.message && (
+                      <Alert severity="error">
+                        {removeUserFromTeamError.message}
+                      </Alert>
+                    )}
+                  {!NEXT_PUBLIC_READ_ONLY && (
+                    <Box sx={{ display: "flex" }}>
+                      <Form
+                        fields={TEAM_USER_FIELDS}
+                        form={teamUserForm}
+                        onChange={handleOnNewTeamUserChange}
+                      />
+                      <Button
+                        onClick={handleOnAddUserToTeam}
+                        disabled={addUserToTeamLoading}
+                      >
+                        Add
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
               )}
             </div>
             <InteractiveList
