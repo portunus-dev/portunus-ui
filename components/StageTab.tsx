@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -72,15 +72,15 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
 
   const [open, setOpen] = useState(false)
   const handleOnClose = () => setOpen(false)
-  const handleOnCopyPrintEnv = (stage: Stage) => () => {
-    const printEnvEntry = `PORTUNUS_JWT=${jwt}/${
+  const handleOnCopyPrintEnv = useCallback((stage: Stage) => () => {
+    const printEnvEntry = `PORTUNUS_TOKEN=${jwt}/${
       stage.team
     }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
     
     navigator.clipboard.writeText(printEnvEntry).then(() => {
       setOpen(true)
     });
-  };
+  }, [jwt]);
 
   return (
     <Grid container sx={{ p: 1 }}>
