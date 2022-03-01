@@ -13,10 +13,12 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import KeyIcon from "@mui/icons-material/Key";
 
 import { apiRequest } from "../utils/api";
 import { ArrayEntity, Team, Project, Stage, EnvOption } from "../utils/types";
@@ -118,7 +120,7 @@ export default function EnvRoot() {
       router.replace("/login");
     }
   }, [isLoggedIn]);
-  
+
   const [expanded, setExpanded] = useState(EXPANDED_DEFAULT);
   const handleOnExpand = (type: keyof Expanded) => () => {
     setExpanded((o) => ({ ...o, [type]: !o[type] }));
@@ -150,16 +152,16 @@ export default function EnvRoot() {
     <EnvContext.Provider value={{ env, dispatch }}>
       <Box sx={{ width: "100%" }}>
         <AppBar position="static">
-          <Toolbar>
-            {/* THIS CAUSED A DEPENDENCY CRASH? <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <KeyIcon />
-          </IconButton> */}
+          <Toolbar sx={{ flexWrap: "wrap" }}>
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{ mr: 2 }}
+            >
+              <KeyIcon />
+            </IconButton>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Portunus
             </Typography>
@@ -243,7 +245,7 @@ export default function EnvRoot() {
               )}
             />
             <Box>
-              <Grid container wrap="nowrap" spacing={1} sx={{ p: 1 }}>
+              <Grid container spacing={1} sx={{ p: 1, flexWrap: { xs: "wrap", md: "nowrap"}  }}>
                 <Grid
                   item
                   xs={12}
