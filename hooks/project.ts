@@ -10,7 +10,7 @@ const PROJECT_FIELDS: Field[] = [
   {
     key: "name",
     label: "Project Name",
-    validation: "name",
+    invalid: "name",
     materialProps: { variant: "standard", required: true },
   },
 ];

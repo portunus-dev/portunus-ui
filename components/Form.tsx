@@ -17,37 +17,40 @@ const Form = ({ fields, form, onChange }: FormProps) => {
   // Designed to be used with ../hooks/utils > useForm
   return (
     <Box>
-      {fields.map(
-        ({
-          key,
-          label,
-          type,
-          invalidText,
-          helperText,
-          options,
-          materialProps,
-        }) => (
-          <TextField
-            key={key}
-            id={key}
-            error={form[key]?.invalid}
-            helperText={form[key]?.invalid ? invalidText : helperText || ""}
-            type={type || "text"}
-            select={options || false}
-            label={label}
-            value={form[key]?.value || ""}
-            onChange={onChange}
-            {...materialProps}
-          >
-            {options &&
-              options.map(({ value, label }) => (
-                <MenuItem key={value} value={value}>
-                  {label}
-                </MenuItem>
-              ))}
-          </TextField>
-        )
-      )}
+      {fields
+        .filter(({ key }) => !form[key]?.hide)
+        .map(
+          ({
+            key,
+            label,
+            type,
+            invalidText,
+            helperText,
+            options,
+            materialProps,
+          }) => (
+            <TextField
+              key={key}
+              id={key}
+              error={form[key]?.invalid}
+              helperText={form[key]?.invalid ? invalidText : helperText || ""}
+              type={type || "text"}
+              select={options || false}
+              label={label}
+              value={form[key]?.value || ""}
+              onChange={onChange}
+              disabled={form[key]?.disabled}
+              {...materialProps}
+            >
+              {options &&
+                options.map(({ value, label }) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
+                  </MenuItem>
+                ))}
+            </TextField>
+          )
+        )}
     </Box>
   );
 };
