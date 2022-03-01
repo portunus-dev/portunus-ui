@@ -69,6 +69,7 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
           onItemClick={handleChooseTeam}
           onItemRemove={handleOnDeleteTeam}
           onItemEdit={handleOnEditTeam}
+          confirmCount={2}
         />
         {!NEXT_PUBLIC_READ_ONLY && (
           <Box sx={{ display: "flex" }}>

@@ -55,14 +55,14 @@ function InteractiveList<ListItem extends StringObject>({
   ItemSecondaryNode,
   onItemEdit,
   onItemRemove,
-  confirmCount = -1,
+  confirmCount = 0,
 }: ListProps<ListItem>) {
   const [confirm, setConfirm] = useState(0);
   const [deleteKey, setDeleteKey] = useState("");
   const handleOnDelete = (o: ListItem) => () => {
     const key = o[keyKey];
-    if (key === deleteKey) {
-      if (confirm === 0 || confirm < confirmCount + 1) {
+    if (key === deleteKey || confirmCount <= 0) {
+      if (confirmCount > 0 && confirm < confirmCount + 1) {
         setConfirm((o) => o + 1);
       } else if (onItemRemove) {
         onItemRemove(o);
