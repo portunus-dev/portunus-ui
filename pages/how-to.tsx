@@ -22,12 +22,12 @@ export default function HowTo() {
           <Typography>
             <ul>
               <li>
-                using a local <strong>.env</strong> file, you can automatically
+                using a local <code>.env</code> file, you can automatically
                 connect with Portunus
               </li>
               <li>
-                <strong>print-env</strong> is configured to process the&nbsp;
-                <strong>PORTUNUS_JWT</strong> key to pull in all associated
+                <code>print-env</code> is configured to process the&nbsp;
+                <code>PORTUNUS_JWT</code> key to pull in all associated
                 variables
               </li>
               <li>
@@ -38,18 +38,18 @@ export default function HowTo() {
 
               <li>
                 include your desired team+project+stage in&nbsp;
-                <strong>.env</strong> with the format: &nbsp;
-                <strong>
+                <code>.env</code> with the format: &nbsp;
+                <code>
                   PORTUNUS_JWT=[jwt]/[team id]/[project name]/[stage name]
-                </strong>{" "}
+                </code>{" "}
                 <ul>
                   <li>
-                    running <strong>print-env</strong> will print out the ENV
+                    running <code>print-env</code> will print out the ENV
                     associated with the team+project+stage provided above
                   </li>
                   <li>
                     example usage:{" "}
-                    <strong>env $(print-env) node some-command</strong>
+                    <code>env $(print-env) node some-command</code>
                   </li>
                 </ul>
               </li>
@@ -66,18 +66,18 @@ export default function HowTo() {
             <ul>
               <li>
                 You can call the api directly via&nbsp;
-                <strong>
+                <code>
                   https://cli.mindswire.com/env?team=[team id]&project=[project
                   name]&stage=[stage name]
-                </strong>
+                </code>
               </li>
               <li>
-                supply your jwt token via the <strong>portunus-jwt</strong>{" "}
+                supply your jwt token via the <code>portunus-jwt</code>{" "}
                 header
               </li>
               <li>
                 The environment variables are a JSON object found in the{" "}
-                <strong>response.vars</strong> field
+                <code>response.vars</code> field
               </li>
             </ul>
           </Typography>
