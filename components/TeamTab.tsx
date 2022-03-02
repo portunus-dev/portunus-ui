@@ -22,15 +22,20 @@ type TeamTabProps = {
 };
 
 const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
-  const { env } = useContext(EnvContext);
+  const { env, setToast } = useContext(EnvContext);
 
   const {
     TEAM_FIELDS,
     teamForm,
     handleOnNewTeamChange,
     createTeamLoading,
+    createTeamError,
     handleOnCreateTeam,
+    deleteTeamLoading,
+    deleteTeamError,
     handleOnDeleteTeam,
+    editTeamLoading,
+    editTeamError,
     handleOnEditTeam,
     teamUserData,
     teamUserLoading,
@@ -57,6 +62,45 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
       teamUserExecuteRequest(env.team);
     }
   }, [env.team, teamUserExecuteRequest, addUserToTeamData, removeUserFromTeamData]);
+
+  // catch all error toast
+  useEffect(() => {
+    if (
+      (!createTeamLoading && createTeamError) ||
+      (!editTeamLoading && editTeamError) ||
+      (!deleteTeamLoading && deleteTeamError) ||
+      (!teamUserLoading && teamUserError) ||
+      (!addUserToTeamLoading && addUserToTeamError) ||
+      (!removeUserFromTeamLoading && removeUserFromTeamError)
+    ) {
+      setToast({ 
+        content: (
+          <Alert severity="error">
+            {createTeamError?.message ||
+              editTeamError?.message ||
+              deleteTeamError?.message ||
+              teamUserError?.message ||
+              addUserToTeamError?.message ||
+              removeUserFromTeamError?.message}
+          </Alert>
+        )}
+      )
+    }
+  }, [
+      setToast,
+      createTeamLoading,
+      createTeamError,
+      editTeamLoading,
+      editTeamError,
+      teamUserLoading,
+      deleteTeamError,
+      deleteTeamLoading,
+      teamUserError,
+      addUserToTeamLoading,
+      addUserToTeamError,
+      removeUserFromTeamLoading,
+      removeUserFromTeamError,
+  ])
 
   return (
     <Grid container sx={{ p: 1 }}>
@@ -88,9 +132,6 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
       <Grid item xs={12}>
         {env.team && (
           <div>
-            {!teamUserLoading && teamUserError && teamUserError.message && (
-              <Alert severity="error">{teamUserError.message}</Alert>
-            )}
             {!teamUserError && teamUserData && (
               <Box>
                 <InteractiveList
@@ -103,20 +144,6 @@ const TeamTab = ({ handleChooseTeam, handleChooseProject }: TeamTabProps) => {
                 {(teamUserLoading ||
                   addUserToTeamLoading ||
                   removeUserFromTeamLoading) && <CircularProgress />}
-                {!addUserToTeamLoading &&
-                  addUserToTeamError &&
-                  addUserToTeamError.message && (
-                    <Alert severity="error">
-                      {addUserToTeamError.message}
-                    </Alert>
-                  )}
-                {!removeUserFromTeamLoading &&
-                  removeUserFromTeamError &&
-                  removeUserFromTeamError.message && (
-                    <Alert severity="error">
-                      {removeUserFromTeamError.message}
-                    </Alert>
-                  )}
                 {!NEXT_PUBLIC_READ_ONLY && (
                   <Box sx={{ display: "flex" }}>
                     <Form

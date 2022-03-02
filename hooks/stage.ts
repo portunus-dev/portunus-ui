@@ -119,5 +119,6 @@ export const useStage = () => {
     handleOnNewStageChange,
     handleOnCreateStage,
     createStageLoading,
+    createStageError,
   };
 };
