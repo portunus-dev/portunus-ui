@@ -1,10 +1,11 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
+import Alert from "@mui/material/Alert";
 
-import { Project, Stage } from "../utils/types";
+import { Project } from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
 import { useProject } from "../hooks/project";
@@ -16,24 +17,52 @@ const { NEXT_PUBLIC_READ_ONLY } = process.env;
 
 type ProjectTabProps = {
   handleChooseProject: (value: Project) => () => void;
-  handleChooseStage: (value: Stage) => () => void;
 };
 
 const ProjectTab = ({
   handleChooseProject,
-  handleChooseStage,
 }: ProjectTabProps) => {
-  const { env } = useContext(EnvContext);
+  const { env, setToast } = useContext(EnvContext);
 
   const {
     PROJECT_FIELDS,
     projectForm,
     handleOnNewProjectChange,
     createProjectLoading,
+    createProjectError,
     handleOnCreateProject,
+    deleteProjectLoading,
+    deleteProjectError,
     handleOnDeleteProject,
+    editProjectLoading,
+    editProjectError,
     handleOnEditProject,
   } = useProject();
+
+  // catch all error toast
+  useEffect(() => {
+    if (
+      (!createProjectLoading && createProjectError) ||
+      (!editProjectLoading && editProjectError) ||
+      (!deleteProjectLoading && deleteProjectError)
+    ) {
+      setToast({ 
+        content: (
+          <Alert severity="error">
+            {createProjectError?.message || editProjectError?.message || deleteProjectError?.message}
+          </Alert>
+        )}
+      )
+    }
+  }, [
+      setToast,
+      createProjectLoading,
+      createProjectError,
+      editProjectLoading,
+      editProjectError,
+      deleteProjectError,
+      deleteProjectLoading,
+  ])
 
   return (
     <Grid container sx={{ p: 1 }}>

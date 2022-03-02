@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 
 import { apiRequest } from "../utils/api";
 import { Team, Project, Stage } from "../utils/types";
@@ -45,11 +46,14 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
 
   const {
     STAGE_FIELDS,
-    handleOnDeleteStage,
     stageForm,
     handleOnNewStageChange,
-    handleOnCreateStage,
     createStageLoading,
+    createStageError,
+    handleOnCreateStage,
+    deleteStageLoading,
+    deleteStageError,
+    handleOnDeleteStage,
   } = useStage();
 
   const {
@@ -78,6 +82,28 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
       setToast({ content: "Copied!", duration: 1500 })
     });
   }, [jwt]);
+
+  // catch all error toast
+  useEffect(() => {
+    if (
+      (!createStageLoading && createStageError) ||
+      (!deleteStageLoading && deleteStageError)
+    ) {
+      setToast({ 
+        content: (
+          <Alert severity="error">
+            {createStageError?.message || deleteStageError?.message}
+          </Alert>
+        )}
+      )
+    }
+  }, [
+      setToast,
+      createStageLoading,
+      createStageError,
+      deleteStageError,
+      deleteStageLoading,
+  ])
 
   return (
     <Grid container sx={{ p: 1 }}>

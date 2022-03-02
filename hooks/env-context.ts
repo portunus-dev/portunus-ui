@@ -10,7 +10,7 @@ type EnvContext = {
     type: EnvDispatchType;
     payload: any;
   }>;
-  setToast: ({ children, action, duration }: Toast) => void;
+  setToast: ({ content, action, duration }: Toast) => void;
 };
 
 const defaultContext: EnvContext = {

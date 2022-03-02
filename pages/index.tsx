@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -42,6 +42,8 @@ const EXPANDED_DEFAULT: Expanded = {
   project: false,
   stage: false,
 };
+
+const TOAST_DEFAULT: Toast = { content: undefined, action: undefined, duration: 3000 }
 
 const fetchAllData = async () => {
   const res = await apiRequest("all", { method: "GET" });
@@ -126,11 +128,11 @@ export default function EnvRoot() {
 
   const [open, setOpen] = useState(false)
   const handleOnClose = () => setOpen(false)
-  const [toast, setToastContent] = useState({ content: null, action: null, duration: 3000 } as Toast)
-  const setToast = (toast: Toast) => {
+  const [toast, setToastContent] = useState(TOAST_DEFAULT)
+  const setToast = useCallback((toast: Toast) => {
     setToastContent(toast)
     setOpen(true)
-  }
+  }, [])
 
   return (
     <EnvContext.Provider value={{ env, dispatch, setToast }}>
@@ -238,10 +240,7 @@ export default function EnvRoot() {
                 </Button>
                 {env.project && env.project.project}
                 {expanded["project"] && (
-                  <ProjectTab
-                    handleChooseProject={handleChooseProject}
-                    handleChooseStage={handleChooseStage}
-                  />
+                  <ProjectTab handleChooseProject={handleChooseProject} />
                 )}
               </Grid>
               <Divider orientation="vertical" flexItem />
@@ -278,7 +277,7 @@ export default function EnvRoot() {
       <Snackbar
         open={open}
         onClose={handleOnClose}
-        autoHideDuration={toast.duration}
+        autoHideDuration={toast.duration || 2000}
         action={toast.action}
         message={typeof toast.content === "string" ? toast.content : null}
       >
