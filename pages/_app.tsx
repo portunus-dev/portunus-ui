@@ -6,6 +6,9 @@ import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+
+import KeyIcon from "@mui/icons-material/Key";
 
 import { ThemeProvider } from "@mui/material/styles";
 import type { AppProps } from "next/app";
@@ -41,17 +44,11 @@ export default function MyApp(props: AppProps) {
         <CssBaseline />
         {router.pathname !== "/login" && (
           <AppBar position="static">
-            <Toolbar>
-              {/* THIS CAUSED A DEPENDENCY CRASH? <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <KeyIcon />
-          </IconButton> */}
-              <Box sx={{ flexGrow: 1 }}>
+            <Toolbar sx={{ flexWrap: "wrap" }}>
+              <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+                <Box>
+                  <KeyIcon fontSize="large" />
+                </Box>
                 <Link href="/">
                   <Typography
                     variant="h6"
@@ -67,7 +64,7 @@ export default function MyApp(props: AppProps) {
                 <Button
                   variant="outlined"
                   color="secondary"
-                  sx={{ color: "white", textDecoration: "none" }}
+                  sx={{ textDecoration: "none" }}
                 >
                   How To
                 </Button>

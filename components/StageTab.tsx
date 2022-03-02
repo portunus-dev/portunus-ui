@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -72,20 +72,20 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
 
   const [open, setOpen] = useState(false)
   const handleOnClose = () => setOpen(false)
-  const handleOnCopyPrintEnv = (stage: Stage) => () => {
-    const printEnvEntry = `PORTUNUS_JWT=${jwt}/${
+  const handleOnCopyPrintEnv = useCallback((stage: Stage) => () => {
+    const printEnvEntry = `PORTUNUS_TOKEN=${jwt}/${
       stage.team
     }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
     
     navigator.clipboard.writeText(printEnvEntry).then(() => {
       setOpen(true)
     });
-  };
+  }, [jwt]);
 
   return (
-    <Grid container spacing={1} sx={{ p: 3 }}>
+    <Grid container sx={{ p: 1 }}>
       {env.team && env.project && (
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12}>
           <InteractiveList
             subheader="Manage Stages"
             selected={env.stage}
@@ -117,17 +117,14 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
       )}
 
       <Grid item xs={12} md={8}>
-        {env.team && env.project && env.stage ? (
+        {env.team && env.project && env.stage && (
           <React.Fragment>
-            <h2>Current Stage: {env.stage.stage}</h2>
             {varLoading && <CircularProgress />}
             {!varLoading && varError && varError.message}
             {!varLoading && !varError && varData && (
               <KVEditor initialKV={varData.vars} env={env} />
             )}
           </React.Fragment>
-        ) : (
-          <h2>Choose a stage</h2>
         )}
       </Grid>
       <Snackbar

@@ -1,16 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
+import Divider from "@mui/material/Divider";
 
 import CircularProgress from "@mui/material/CircularProgress";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Breadcrumbs from "@mui/material/Breadcrumbs";
+
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 import { apiRequest } from "../utils/api";
 import { ArrayEntity, Team, Project, Stage, EnvOption } from "../utils/types";
@@ -23,43 +24,22 @@ import TeamTab from "../components/TeamTab";
 import ProjectTab from "../components/ProjectTab";
 import StageTab from "../components/StageTab";
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Grid container spacing={1} sx={{ p: 3 }}>
-          {children}
-        </Grid>
-      )}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-}
-
 const INDENT = {
   team: 1,
   project: 3,
   stage: 5,
+};
+
+interface Expanded {
+  team: boolean;
+  project: boolean;
+  stage: boolean;
+}
+
+const EXPANDED_DEFAULT: Expanded = {
+  team: true,
+  project: false,
+  stage: false,
 };
 
 const fetchAllData = async () => {
@@ -68,13 +48,8 @@ const fetchAllData = async () => {
   return allData;
 };
 
+
 export default function EnvRoot() {
-  const [tab, setTab] = React.useState(0);
-
-  const handleChange = (_: any, tab: number) => {
-    setTab(tab);
-  };
-
   const { data, loading, error, executeRequest } = useRequest<ArrayEntity>({
     requestPromise: fetchAllData,
   });
@@ -103,7 +78,11 @@ export default function EnvRoot() {
   };
 
   useEffect(() => {
-    setTab(env.stage ? 2 : env.project ? 1 : 0);
+    setExpanded({
+      team: !env.stage && !env.project,
+      project: env.team && !env.stage,
+      stage: !!env.project,
+    });
   }, [env]);
 
   /*
@@ -116,6 +95,33 @@ export default function EnvRoot() {
     - console errors
     - stop polluting env state with options (i.e. we had path, label & desc)
   */
+
+  const [expanded, setExpanded] = useState(EXPANDED_DEFAULT);
+  const handleOnExpand = (type: keyof Expanded) => () => {
+    setExpanded((o) => ({ ...o, [type]: !o[type] }));
+  };
+
+  const COLLAPSED_WIDTH = 2;
+  const teamWidth = expanded["team"]
+    ? (12 -
+        (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
+        (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
+      (1 + (expanded["project"] ? 1 : 0) + (expanded["stage"] ? 1 : 0))
+    : COLLAPSED_WIDTH;
+
+  const projectWidth = expanded["project"]
+    ? (12 -
+        (expanded["team"] ? 0 : COLLAPSED_WIDTH) -
+        (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
+      (1 + (expanded["team"] ? 1 : 0) + (expanded["stage"] ? 1 : 0))
+    : COLLAPSED_WIDTH;
+
+  const stageWidth = expanded["stage"]
+    ? (12 -
+        (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
+        (expanded["team"] ? 0 : COLLAPSED_WIDTH)) /
+      (1 + (expanded["project"] ? 1 : 0) + (expanded["team"] ? 1 : 0))
+    : COLLAPSED_WIDTH;
 
   return (
     <EnvContext.Provider value={{ env, dispatch }}>
@@ -131,22 +137,6 @@ export default function EnvRoot() {
       )}
       {!loading && !error && (
         <Box sx={{ p: 1 }}>
-          <Box sx={{ display: "flex" }}>
-            <Typography variant="h6">
-              {env.team ? "Current:" : "Choose a team/project/stage"}
-            </Typography>
-            <Breadcrumbs aria-label="breadcrumb">
-              {env.team?.name && (
-                <Button onClick={() => setTab(0)}>{env.team.name}</Button>
-              )}
-              {env.project?.project && (
-                <Button onClick={() => setTab(1)}>{env.project.project}</Button>
-              )}
-              {env.stage?.stage && (
-                <Button onClick={() => setTab(2)}>{env.stage.stage}</Button>
-              )}
-            </Breadcrumbs>
-          </Box>
           <Autocomplete
             id="grouped-demo"
             options={options}
@@ -189,36 +179,91 @@ export default function EnvRoot() {
               <TextField {...params} label="Quick Search" />
             )}
           />
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-            <Tabs
-              value={tab}
-              onChange={handleChange}
-              aria-label="basic tabs example"
-              variant="fullWidth"
-              scrollButtons="auto"
-              centered
-            >
-              <Tab label="Team" {...a11yProps(1)} />
-              <Tab label="Project" disabled={!env.team} {...a11yProps(2)} />
-              <Tab label="Stage" disabled={!env.project} {...a11yProps(3)} />
-              {/* <Tab label="Vars" disabled={!env.stage} {...a11yProps(4)} /> */}
-            </Tabs>
+          <Box>
+            <Grid container spacing={1} sx={{ p: 1, flexWrap: { xs: "wrap", md: "nowrap"}  }}>
+              <Grid
+                item
+                xs={12}
+                md={teamWidth}
+                sx={{ transition: "all ease 0.5s", p: 1 }}
+              >
+                <Button
+                  variant="outlined"
+                  endIcon={
+                    expanded["team"] ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                  }
+                  onClick={handleOnExpand("team")}
+                  fullWidth
+                >
+                  Team
+                </Button>
+                {env.team && env.team.name}
+                {expanded["team"] && (
+                  <TeamTab
+                    handleChooseTeam={handleChooseTeam}
+                    handleChooseProject={handleChooseProject}
+                  />
+                )}
+              </Grid>
+              <Divider orientation="vertical" flexItem />
+              <Grid
+                item
+                xs={12}
+                md={projectWidth}
+                sx={{ transition: "all ease 0.5s", p: 1 }}
+              >
+                <Button
+                  variant="outlined"
+                  disabled={!env.team}
+                  endIcon={
+                    expanded["project"] ? (
+                      <ExpandLessIcon />
+                    ) : (
+                      <ExpandMoreIcon />
+                    )
+                  }
+                  onClick={handleOnExpand("project")}
+                  fullWidth
+                >
+                  Project
+                </Button>
+                {env.project && env.project.project}
+                {expanded["project"] && (
+                  <ProjectTab
+                    handleChooseProject={handleChooseProject}
+                    handleChooseStage={handleChooseStage}
+                  />
+                )}
+              </Grid>
+              <Divider orientation="vertical" flexItem />
+              <Grid
+                item
+                xs={12}
+                md={stageWidth}
+                sx={{ transition: "all ease 0.5s", p: 1 }}
+              >
+                <Button
+                  variant="outlined"
+                  disabled={!env.project}
+                  endIcon={
+                    expanded["stage"] ? (
+                      <ExpandLessIcon />
+                    ) : (
+                      <ExpandMoreIcon />
+                    )
+                  }
+                  onClick={handleOnExpand("stage")}
+                  fullWidth
+                >
+                  Stage
+                </Button>
+                {env.stage && env.stage.stage}
+                {expanded["stage"] && (
+                  <StageTab handleChooseStage={handleChooseStage} />
+                )}
+              </Grid>
+            </Grid>
           </Box>
-          <TabPanel value={tab} index={0}>
-            <TeamTab
-              handleChooseTeam={handleChooseTeam}
-              handleChooseProject={handleChooseProject}
-            />
-          </TabPanel>
-          <TabPanel value={tab} index={1}>
-            <ProjectTab
-              handleChooseProject={handleChooseProject}
-              handleChooseStage={handleChooseStage}
-            />
-          </TabPanel>
-          <TabPanel value={tab} index={2}>
-            <StageTab handleChooseStage={handleChooseStage} />
-          </TabPanel>
         </Box>
       )}
     </EnvContext.Provider>
