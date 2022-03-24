@@ -16,7 +16,7 @@ const STAGE_FIELDS: Field[] = [
 ];
 
 const deleteStage = async (stage: Stage) => {
-  const { key, name } = await apiRequest("/stage", {
+  const { key, name } = await apiRequest("stage", {
     method: "DELETE",
     body: JSON.stringify({ stage: stage.key }),
   });
@@ -38,7 +38,7 @@ export const useStage = () => {
 
   const createNewStage = useCallback(async () => {
     if (env.team && env.project) {
-      const { key, stage } = await apiRequest("/stage", {
+      const { key, stage } = await apiRequest("stage", {
         method: "POST",
         body: JSON.stringify({
           team: env.team.key,
@@ -86,7 +86,7 @@ export const useStage = () => {
   }, [deleteStageData]);
 
   // const editStage = useCallback(async ({ name, stage }) => {
-  //   await apiRequest("/stage", {
+  //   await apiRequest("stage", {
   //     method: "PUT",
   //     body: JSON.stringify({ stage: stage.key, name }),
   //   });

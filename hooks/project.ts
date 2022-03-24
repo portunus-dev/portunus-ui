@@ -16,7 +16,7 @@ const PROJECT_FIELDS: Field[] = [
 ];
 
 const deleteProject = async (project: Project) => {
-  const { key, name } = await apiRequest("/project", {
+  const { key, name } = await apiRequest("project", {
     method: "DELETE",
     body: JSON.stringify({ project: project.key }),
   });
@@ -30,7 +30,7 @@ const editProject = async ({
   name: string;
   project: Project;
 }) => {
-  await apiRequest("/project", {
+  await apiRequest("project", {
     method: "PUT",
     body: JSON.stringify({ project: project.key, name }),
   });
@@ -52,7 +52,7 @@ export const useProject = () => {
 
   const createNewProject = useCallback(async () => {
     if (env.team) {
-      const { key, project } = await apiRequest("/project", {
+      const { key, project } = await apiRequest("project", {
         method: "POST",
         body: JSON.stringify({ team: env.team.key, ...getProjectObject() }),
       });

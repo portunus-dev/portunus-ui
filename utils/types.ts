@@ -1,6 +1,7 @@
 export type Team = {
   key: string;
   name: string;
+  audit: string;
 };
 
 export type Project = {
@@ -49,8 +50,21 @@ export type EnvOption = {
 export type UserType = {
   email: string;
   jwt_uuid: string; // TODO: more specific type for UUID?
-  team: string;
+  audit: string;
   // iat: number; TODO: this was causing a conflict with ListItem. Should Review
 };
 
-export type Toast = { content?: React.ReactElement | string, action?: React.ReactElement, duration?: number }
+export type Toast = {
+  content?: React.ReactElement | string;
+  action?: React.ReactElement;
+  duration?: number;
+};
+
+export type AuditHistory = {
+  email: string;
+  start: string;
+  end: string;
+  explanation: string;
+  method: string;
+  url: string;
+};
