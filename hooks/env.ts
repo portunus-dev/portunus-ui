@@ -144,7 +144,7 @@ export const useEnv = (init: ArrayEntity | undefined) => {
         const editedTeamIdx = teams.findIndex((o) => o.key === payload.key);
         if (editedTeamIdx < 0) return state;
         const update = { ...teams[editedTeamIdx], ...payload };
-        console.log("editTeam: ", payload);
+
         return {
           ...state,
           team: state.team?.key === payload.key ? update : state.team,

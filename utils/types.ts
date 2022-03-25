@@ -50,8 +50,16 @@ export type EnvOption = {
 export type UserType = {
   email: string;
   jwt_uuid: string; // TODO: more specific type for UUID?
-  audit: string;
   // iat: number; TODO: this was causing a conflict with ListItem. Should Review
+};
+
+export type FullUser = {
+  key: string;
+  email: string;
+  jwt_uuid: string;
+  preferences?: {
+    audit: boolean;
+  };
 };
 
 export type Toast = {
