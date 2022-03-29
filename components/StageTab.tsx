@@ -3,8 +3,15 @@ import React, { useContext, useEffect, useState, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import Typography from "@mui/material/Typography";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 import { apiRequest } from "../utils/api";
 import { Team, Project, Stage } from "../utils/types";
@@ -42,7 +49,7 @@ const fetchVarData = async ({
 };
 
 const StageTab = ({ handleChooseStage }: StageTabProps) => {
-  const { env, setToast } = useContext(EnvContext);
+  const { env, setToast, openCreateModal } = useContext(EnvContext);
 
   const {
     STAGE_FIELDS,
@@ -53,7 +60,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
     handleOnCreateStage,
     deleteStageLoading,
     deleteStageError,
-    handleOnDeleteStage,
+    deleteStage,
   } = useStage();
 
   const {
@@ -73,15 +80,26 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
 
   const { jwt } = useAuth();
 
-  const handleOnCopyPrintEnv = useCallback((stage: Stage) => () => {
-    const printEnvEntry = `PORTUNUS_TOKEN=${jwt}/${
-      stage.team
-    }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
-    
-    navigator.clipboard.writeText(printEnvEntry).then(() => {
-      setToast({ content: "Copied!", duration: 1500 })
-    });
-  }, [jwt]);
+  const handleOnCopyPrintEnv = useCallback(
+    (stage: Stage) => (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const printEnvEntry = `PORTUNUS_TOKEN=${jwt}/${
+        stage.team
+      }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
+
+      console.log("clipboard!");
+      navigator.clipboard.writeText(printEnvEntry).then(() => {
+        console.log("the toast!");
+        setToast({ content: "Copied!", duration: 1500 });
+      });
+    },
+    [jwt]
+  );
+
+  const handleOnDeleteStage = (stage: Stage) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteStage(stage);
+  };
 
   // catch all error toast
   useEffect(() => {
@@ -89,67 +107,83 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
       (!createStageLoading && createStageError) ||
       (!deleteStageLoading && deleteStageError)
     ) {
-      setToast({ 
+      setToast({
         content: (
           <Alert severity="error">
             {createStageError?.message || deleteStageError?.message}
           </Alert>
-        )}
-      )
+        ),
+      });
     }
   }, [
-      setToast,
-      createStageLoading,
-      createStageError,
-      deleteStageError,
-      deleteStageLoading,
-  ])
+    setToast,
+    createStageLoading,
+    createStageError,
+    deleteStageError,
+    deleteStageLoading,
+  ]);
 
+  const handleOnOpenCreateModal = () => openCreateModal("stage");
+
+  const [expanded, setExpanded] = useState("");
+  const handleOnSetExpanded = (stage: Stage) => () => {
+    setExpanded((o) => (o === stage.stage ? "" : stage.stage));
+    handleChooseStage(stage);
+  };
   return (
     <Grid container sx={{ p: 1 }}>
+      <Grid item xs={12}>
+        <Box sx={{ display: "flex", width: "100%" }}>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
+            Project Stages
+          </Typography>
+          <Button onClick={handleOnOpenCreateModal}>Add Stage</Button>
+        </Box>
+      </Grid>
       {env.team && env.project && (
         <Grid item xs={12}>
-          <InteractiveList
-            subheader="Manage Stages"
-            selected={env.stage}
-            items={env.stages.filter((o) => o.project === env.project?.key)}
-            titleKey="stage"
-            onItemClick={handleChooseStage}
-            itemSecondaryAction={handleOnCopyPrintEnv}
-            ItemSecondaryNode={<Button>Print Env</Button>}
-            // onItemEdit={handleOnEditStage}
-            onItemRemove={handleOnDeleteStage}
-            confirmCount={0}
-          />
-          {!NEXT_PUBLIC_READ_ONLY && (
-            <Box sx={{ display: "flex" }}>
-              <Form
-                fields={STAGE_FIELDS}
-                form={stageForm}
-                onChange={handleOnNewStageChange}
-              />
-              <Button
-                onClick={handleOnCreateStage}
-                disabled={createStageLoading}
+          {env.stages.filter((o) => o.project === env.project?.key).length ===
+            0 && <Typography variant="body2">No Stages Found</Typography>}
+          {env.stages
+            .filter((o) => o.project === env.project?.key)
+            .map((o) => (
+              <Accordion
+                expanded={expanded === o.stage}
+                onChange={handleOnSetExpanded(o)}
               >
-                Add
-              </Button>
-            </Box>
-          )}
+                <AccordionSummary>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="subtitle2" component="div">
+                      {o.stage}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      component="div"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      {o.vars} Variables
+                    </Typography>
+                  </Box>
+                  <IconButton onClick={handleOnCopyPrintEnv(o)}>
+                    <ContentCopyIcon />
+                  </IconButton>
+                  <Button onClick={handleOnDeleteStage(o)}>Delete</Button>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {env.team && env.project && env.stage && (
+                    <React.Fragment>
+                      {varLoading && <CircularProgress />}
+                      {!varLoading && varError && varError.message}
+                      {!varLoading && !varError && varData && (
+                        <KVEditor initialKV={varData.vars} env={env} />
+                      )}
+                    </React.Fragment>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            ))}
         </Grid>
       )}
-
-      <Grid item xs={12} md={8}>
-        {env.team && env.project && env.stage && (
-          <React.Fragment>
-            {varLoading && <CircularProgress />}
-            {!varLoading && varError && varError.message}
-            {!varLoading && !varError && varData && (
-              <KVEditor initialKV={varData.vars} env={env} />
-            )}
-          </React.Fragment>
-        )}
-      </Grid>
     </Grid>
   );
 };

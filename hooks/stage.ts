@@ -76,8 +76,7 @@ export const useStage = () => {
     requestPromise: deleteStage,
   });
 
-  const handleOnDeleteStage = (stage: Stage) =>
-    deleteStageExecuteRequest(stage);
+  const deleteStage = (stage: Stage) => deleteStageExecuteRequest(stage);
 
   useEffect(() => {
     if (deleteStageData) {
@@ -112,7 +111,7 @@ export const useStage = () => {
   // }, [editStageData]);
   return {
     STAGE_FIELDS,
-    handleOnDeleteStage,
+    deleteStage,
     deleteStageLoading,
     deleteStageError,
     stageForm,
