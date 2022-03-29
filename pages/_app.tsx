@@ -4,11 +4,15 @@ import CssBaseline from "@mui/material/CssBaseline";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Divider from "@mui/material/Divider";
 
-import KeyIcon from "@mui/icons-material/Key";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import HelpIcon from "@mui/icons-material/Help";
 
 import { ThemeProvider } from "@mui/material/styles";
 import type { AppProps } from "next/app";
@@ -20,6 +24,7 @@ import Link from "../src/Link";
 
 import User from "../components/User";
 
+import PortunusLogo from "../components/PortunusLogo";
 import { useAuth } from "../hooks/auth";
 
 const style = {
@@ -53,9 +58,14 @@ export default function MyApp(props: AppProps) {
     refresh();
   }, [router.query]);
 
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>();
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <React.Fragment>
@@ -73,41 +83,46 @@ export default function MyApp(props: AppProps) {
           <AppBar position="static">
             <Toolbar sx={{ flexWrap: "wrap" }}>
               <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
-                <Box>
-                  <KeyIcon fontSize="large" />
-                </Box>
                 <Link href="/">
-                  <Typography
-                    variant="h6"
-                    component="div"
-                    sx={{ color: "white", textDecoration: "none" }}
-                  >
-                    Portunus
-                  </Typography>
+                  <PortunusLogo color="white" />
                 </Link>
               </Box>
-
-              <Link href="/how-to">
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  sx={{ textDecoration: "none" }}
-                >
-                  How To
-                </Button>
-              </Link>
               <Box sx={{ display: "flex", ml: 1 }}>
                 <Box>
-                  <Typography variant="subtitle2" component="div">
-                    Logged in as:
-                  </Typography>
-                  <Button onClick={handleOpen} size="small" color="inherit">
+                  <Button
+                    id="account-button"
+                    aria-controls={open ? "account-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open ? "true" : undefined}
+                    onClick={handleClick}
+                    endIcon={<ExpandMoreIcon />}
+                    sx={{ textTransform: "none", color: "white" }}
+                  >
                     {(user || {}).email}
                   </Button>
+                  <Menu
+                    id="account-menu"
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleClose}
+                    MenuListProps={{
+                      "aria-labelledby": "account-button",
+                      sx: { pb: 0 },
+                    }}
+                  >
+                    <MenuItem disabled divider>
+                      Settings (coming soon)
+                    </MenuItem>
+                    <MenuItem onClick={() => logout()}>
+                      <Button>Logout</Button>
+                    </MenuItem>
+                  </Menu>
                 </Box>
-                <Button size="small" color="inherit" onClick={() => logout()}>
-                  Logout
-                </Button>
+                <Link href="/how-to">
+                  <IconButton sx={{ color: "white" }}>
+                    <HelpIcon />
+                  </IconButton>
+                </Link>
               </Box>
             </Toolbar>
           </AppBar>
