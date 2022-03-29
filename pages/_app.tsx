@@ -9,7 +9,6 @@ import Modal from "@mui/material/Modal";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import Divider from "@mui/material/Divider";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HelpIcon from "@mui/icons-material/Help";
@@ -95,7 +94,7 @@ export default function MyApp(props: AppProps) {
                     aria-haspopup="true"
                     aria-expanded={open ? "true" : undefined}
                     onClick={handleClick}
-                    endIcon={<ExpandMoreIcon />}
+                    endIcon={<ExpandMoreIcon sx={{ color: "white" }} />}
                     sx={{ textTransform: "none", color: "white" }}
                   >
                     {(user || {}).email}
@@ -119,8 +118,8 @@ export default function MyApp(props: AppProps) {
                   </Menu>
                 </Box>
                 <Link href="/how-to">
-                  <IconButton sx={{ color: "white" }}>
-                    <HelpIcon />
+                  <IconButton>
+                    <HelpIcon sx={{ color: "white" }} />
                   </IconButton>
                 </Link>
               </Box>

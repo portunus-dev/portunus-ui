@@ -44,10 +44,16 @@ export const useEnv = (init: ArrayEntity | undefined) => {
       { type, payload }: { type: EnvDispatchType; payload: any }
     ) => {
       if (type === "loadOptions") {
+        const team = payload.teams[0] as Team;
+        const project =
+          team && payload.projects.find((o: Project) => o.team === team.key);
+        const stage =
+          project &&
+          payload.stages.find((o: Stage) => o.project === project.key);
         return {
-          team: undefined,
-          project: undefined,
-          stage: undefined,
+          team,
+          project,
+          stage,
           teams: payload.teams as Team[],
           projects: payload.projects as Project[],
           stages: payload.stages as Stage[],
@@ -56,13 +62,6 @@ export const useEnv = (init: ArrayEntity | undefined) => {
 
       // TODO could to { [key]: value } for easier lookup
       if (type === "chooseOption") {
-        // clear "downstream" options
-        const clearIdx = CLEAR_ORDER.indexOf(payload.key);
-        const clear = CLEAR_ORDER.slice(clearIdx + 1).reduce(
-          (agg, key) => ({ ...agg, [key]: null }),
-          {}
-        );
-
         const options: ArrayOptions | null =
           state[`${payload.key}s` as ArrayTypeKey];
 
@@ -77,10 +76,26 @@ export const useEnv = (init: ArrayEntity | undefined) => {
         if (!newValue) {
           return state;
         }
-        // TODO rewrite to not be reliant on "::" and key structure, as well as be more clear
-        // update "upstream" options
-        // e.g. project should clear "stage", update "team"
-        const keys = newValue.key.split("::");
+
+        // clear "downstream" options
+        // e.g. choosing a team should update project & stage
+        const clearIdx = CLEAR_ORDER.indexOf(payload.key);
+        const clear = CLEAR_ORDER.slice(clearIdx + 1).reduce(
+          (agg, key) => ({
+            ...agg,
+            [key]: (
+              state[`${key}s` as ArrayTypeKey] as (Project | Stage)[]
+            ).find(
+              (o: Project | Stage) =>
+                o[key === "project" ? "team" : "project"] === payload.value
+            ),
+          }),
+          {}
+        );
+
+        // update "upstream" options, in the case of "quick switching" directly to a stage
+        // e.g. choosing a stage should update team & project
+        const keys = newValue.key.split("::"); // TODO be less reliant on "::" and key structure
         const update = CLEAR_ORDER.slice(0, clearIdx).reduce((agg, key, i) => {
           const options: ArrayOptions | null = state[`${key}s` as ArrayTypeKey];
           const newValue = options.find(
@@ -91,7 +106,6 @@ export const useEnv = (init: ArrayEntity | undefined) => {
             [key]: newValue,
           };
         }, {});
-
         return {
           ...state,
           [payload.key]: newValue,

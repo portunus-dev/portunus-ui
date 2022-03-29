@@ -17,7 +17,8 @@ const PortunusLogo = ({ color }: LogoPropTypes) => {
         alignItems: "center",
       }}
     >
-      P<KeyIcon fontSize="small" sx={{ transform: "rotate(-30deg)" }} />
+      P
+      <KeyIcon fontSize="small" sx={{ color, transform: "rotate(-30deg)" }} />
       tunus
     </Typography>
   );

@@ -15,11 +15,21 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 import { apiRequest } from "../utils/api";
-import { ArrayEntity, Team, Project, Stage, EnvOption, Toast } from "../utils/types";
+import {
+  ArrayEntity,
+  Team,
+  Project,
+  Stage,
+  EnvOption,
+  Toast,
+} from "../utils/types";
 
 import { EnvContext } from "../hooks/env-context";
 import { useEnv } from "../hooks/env";
 import { useRequest } from "../hooks/utils";
+
+import TeamDropdown from "../components/TeamDropdown";
+import ProjectDropdown from "../components/ProjectDropdown";
 
 import TeamTab from "../components/TeamTab";
 import ProjectTab from "../components/ProjectTab";
@@ -31,26 +41,17 @@ const INDENT = {
   stage: 5,
 };
 
-interface Expanded {
-  team: boolean;
-  project: boolean;
-  stage: boolean;
-}
-
-const EXPANDED_DEFAULT: Expanded = {
-  team: true,
-  project: false,
-  stage: false,
+const TOAST_DEFAULT: Toast = {
+  content: undefined,
+  action: undefined,
+  duration: 3000,
 };
-
-const TOAST_DEFAULT: Toast = { content: undefined, action: undefined, duration: 3000 }
 
 const fetchAllData = async () => {
   const res = await apiRequest("all", { method: "GET" });
   const allData: ArrayEntity = res;
   return allData;
 };
-
 
 export default function EnvRoot() {
   const { data, loading, error, executeRequest } = useRequest<ArrayEntity>({
@@ -66,27 +67,17 @@ export default function EnvRoot() {
   const handleChoose = (key: string, value: string) =>
     dispatch({ type: "chooseOption", payload: { key, value } });
 
-  const handleChooseTeam = (value: Team) => () =>
-    handleChoose("team", value.key);
+  const handleChooseTeam = (value: Team) => handleChoose("team", value.key);
 
-  const handleChooseProject = (value: Project) => () =>
+  const handleChooseProject = (value: Project) =>
     handleChoose("project", value.key);
 
-  const handleChooseStage = (value: Stage) => () =>
-    handleChoose("stage", value.key);
+  const handleChooseStage = (value: Stage) => handleChoose("stage", value.key);
 
   const handleOnQuickSwitch = (e: React.SyntheticEvent, newValue: any) => {
     // need to pull the correct values!
     if (newValue) handleChoose(newValue.type, newValue.key);
   };
-
-  useEffect(() => {
-    setExpanded({
-      team: !env.stage && !env.project,
-      project: env.team && !env.stage,
-      stage: !!env.project,
-    });
-  }, [env]);
 
   /*
     TODO
@@ -99,43 +90,21 @@ export default function EnvRoot() {
     - stop polluting env state with options (i.e. we had path, label & desc)
   */
 
-  const [expanded, setExpanded] = useState(EXPANDED_DEFAULT);
-  const handleOnExpand = (type: keyof Expanded) => () => {
-    setExpanded((o) => ({ ...o, [type]: !o[type] }));
+  const [open, setOpen] = useState(false);
+  const handleOnClose = () => setOpen(false);
+  const [toast, setToastContent] = useState(TOAST_DEFAULT);
+  const setToast = useCallback((toast: Toast) => {
+    setToastContent(toast);
+    setOpen(true);
+  }, []);
+
+  const openCreateModal = (type: string) => {
+    console.log(type);
+    // TODO: modal with a switch for the AddXYZ component
   };
 
-  const COLLAPSED_WIDTH = 2;
-  const teamWidth = expanded["team"]
-    ? (12 -
-        (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
-        (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
-      (1 + (expanded["project"] ? 1 : 0) + (expanded["stage"] ? 1 : 0))
-    : COLLAPSED_WIDTH;
-
-  const projectWidth = expanded["project"]
-    ? (12 -
-        (expanded["team"] ? 0 : COLLAPSED_WIDTH) -
-        (expanded["stage"] ? 0 : COLLAPSED_WIDTH)) /
-      (1 + (expanded["team"] ? 1 : 0) + (expanded["stage"] ? 1 : 0))
-    : COLLAPSED_WIDTH;
-
-  const stageWidth = expanded["stage"]
-    ? (12 -
-        (expanded["project"] ? 0 : COLLAPSED_WIDTH) -
-        (expanded["team"] ? 0 : COLLAPSED_WIDTH)) /
-      (1 + (expanded["project"] ? 1 : 0) + (expanded["team"] ? 1 : 0))
-    : COLLAPSED_WIDTH;
-
-  const [open, setOpen] = useState(false)
-  const handleOnClose = () => setOpen(false)
-  const [toast, setToastContent] = useState(TOAST_DEFAULT)
-  const setToast = useCallback((toast: Toast) => {
-    setToastContent(toast)
-    setOpen(true)
-  }, [])
-
   return (
-    <EnvContext.Provider value={{ env, dispatch, setToast }}>
+    <EnvContext.Provider value={{ env, dispatch, setToast, openCreateModal }}>
       {loading && (
         <Box sx={{ display: "flex" }}>
           <CircularProgress />
@@ -171,13 +140,18 @@ export default function EnvRoot() {
               // TS only allows you to access shared properties when you spread objects and use (A | B) to catch them
               return options.filter(
                 (o) =>
-                  o &&
-                  o.key.toLowerCase().indexOf(lc) >= 0 ||
+                  (o && o.key.toLowerCase().indexOf(lc) >= 0) ||
                   o.path.toLowerCase().indexOf(lc) >= 0 ||
-                  ((o as Team).name && (o as Team).name.toLowerCase().indexOf(lc) >= 0) ||
-                  ((o as (Project | Stage)).team && (o as (Project | Stage)).team.toLowerCase().indexOf(lc) >= 0) ||
-                  ((o as (Project | Stage)).project && (o as (Project | Stage)).project.toLowerCase().indexOf(lc) >= 0) ||
-                  ((o as Stage).stage && (o as Stage).stage.toLowerCase().indexOf(lc) >= 0)
+                  ((o as Team).name &&
+                    (o as Team).name.toLowerCase().indexOf(lc) >= 0) ||
+                  ((o as Project | Stage).team &&
+                    (o as Project | Stage).team.toLowerCase().indexOf(lc) >=
+                      0) ||
+                  ((o as Project | Stage).project &&
+                    (o as Project | Stage).project.toLowerCase().indexOf(lc) >=
+                      0) ||
+                  ((o as Stage).stage &&
+                    (o as Stage).stage.toLowerCase().indexOf(lc) >= 0)
               );
             }}
             //   groupBy={(option: any) => option.type}
@@ -190,88 +164,16 @@ export default function EnvRoot() {
               <TextField {...params} label="Quick Search" />
             )}
           />
-          <Box>
-            <Grid container spacing={1} sx={{ p: 1, flexWrap: { xs: "wrap", md: "nowrap"}  }}>
-              <Grid
-                item
-                xs={12}
-                md={teamWidth}
-                sx={{ transition: "all ease 0.5s", p: 1 }}
-              >
-                <Button
-                  variant="outlined"
-                  endIcon={
-                    expanded["team"] ? <ExpandLessIcon /> : <ExpandMoreIcon />
-                  }
-                  onClick={handleOnExpand("team")}
-                  fullWidth
-                >
-                  Team
-                </Button>
-                {env.team && env.team.name}
-                {expanded["team"] && (
-                  <TeamTab
-                    handleChooseTeam={handleChooseTeam}
-                    handleChooseProject={handleChooseProject}
-                  />
-                )}
-              </Grid>
-              <Divider orientation="vertical" flexItem />
-              <Grid
-                item
-                xs={12}
-                md={projectWidth}
-                sx={{ transition: "all ease 0.5s", p: 1 }}
-              >
-                <Button
-                  variant="outlined"
-                  disabled={!env.team}
-                  endIcon={
-                    expanded["project"] ? (
-                      <ExpandLessIcon />
-                    ) : (
-                      <ExpandMoreIcon />
-                    )
-                  }
-                  onClick={handleOnExpand("project")}
-                  fullWidth
-                >
-                  Project
-                </Button>
-                {env.project && env.project.project}
-                {expanded["project"] && (
-                  <ProjectTab handleChooseProject={handleChooseProject} />
-                )}
-              </Grid>
-              <Divider orientation="vertical" flexItem />
-              <Grid
-                item
-                xs={12}
-                md={stageWidth}
-                sx={{ transition: "all ease 0.5s", p: 1 }}
-              >
-                <Button
-                  variant="outlined"
-                  disabled={!env.project}
-                  endIcon={
-                    expanded["stage"] ? (
-                      <ExpandLessIcon />
-                    ) : (
-                      <ExpandMoreIcon />
-                    )
-                  }
-                  onClick={handleOnExpand("stage")}
-                  fullWidth
-                >
-                  Stage
-                </Button>
-                {env.stage && env.stage.stage}
-                {expanded["stage"] && (
-                  <StageTab handleChooseStage={handleChooseStage} />
-                )}
-              </Grid>
-            </Grid>
+        </Box>
+      )}
+      {!loading && !error && (
+        <Box>
+          <Box sx={{ display: "flex" }}>
+            <TeamDropdown handleChooseTeam={handleChooseTeam} />
+            <ProjectDropdown handleChooseProject={handleChooseProject} />
           </Box>
+          {/* TABS HERE */}
+          <StageTab handleChooseStage={handleChooseStage} />
         </Box>
       )}
       <Snackbar
