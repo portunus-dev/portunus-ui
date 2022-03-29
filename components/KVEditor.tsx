@@ -7,12 +7,13 @@ import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import CircularProgress from "@mui/material/CircularProgress";
-
-// import DeleteIcon from "@mui/icons-material/Delete";
-// import AddIcon from "@mui/icons-material/Add";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 
 import JSONInput from "react-json-editor-ajrm";
 import locale from "../locale/en.js";
+
+import TabPanel from "../components/TabPanel";
 
 import { useRequest } from "../hooks/utils";
 import { EnvState } from "../utils/types";
@@ -73,7 +74,7 @@ const EMPTY_CHANGES = { add: {}, edit: {}, remove: [] } as Changes;
 const KVEditor = ({ initialKV, env }: KVEditorProps) => {
   // TODO: current updating in KVEditor is broken by changing tabs because component unmounts, but initialKV doesn't change since varData isn't reloaded
   const [base, setBase] = useState(initialKV);
-  const [editing, setEditing] = useState(false);
+
   const [jsonEdit, setJsonEdit] = useState(false);
   const [jsonInitialKV, setJsonInitialKV] = useState(initialKV);
   const [workingKV, setWorkingKV] = useState(transformObjectToList(initialKV));
@@ -140,14 +141,6 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
       return update;
     });
 
-  const handleOnEditVariables = () => setEditing(true);
-  const handleOnCancelEdit = () => {
-    // revert changes
-    setWorkingKV(transformObjectToList(base));
-    setEditing(false);
-    setJsonEdit(false);
-  };
-
   const [jsonError, setJsonError] = useState(false);
   const handleOnJsonKVChange = ({
     jsObject,
@@ -195,7 +188,6 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
       setBase(transformListToObject(workingKV));
       setChanges(EMPTY_CHANGES);
       setInfoMessage("");
-      setEditing(false);
       setJsonEdit(false);
     }
   }, [varData, varError, varLoading, workingKV]);
@@ -206,78 +198,56 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
     !Object.values(changes.edit).length &&
     !changes.remove.length;
 
+  const [tab, setTab] = useState(0);
+
+  const handleChange = (_: React.SyntheticEvent, newTab: number) => {
+    setTab(newTab);
+  };
+
   return (
     <Box sx={{ p: 2 }}>
-      {editing ? (
-        <div>
-          {jsonEdit ? (
-            <Box>
-              <JSONInput
-                placeholder={jsonInitialKV}
-                onChange={handleOnJsonKVChange}
-                height="200px"
-                confirmGood={false}
-                theme="light_mitsuketa_tribute"
-                locale={locale}
-              />
-            </Box>
-          ) : (
-            <Box>
-              {workingKV.map(({ key: k, value: v, index }) => (
-                <Box
-                  sx={{
-                    width: "100%",
-                    display: "flex",
-                    mb: 1,
-                  }}
-                  key={index}
-                >
-                  <TextField value={k} onChange={handleOnKeyChange(index)} />
-                  <TextField value={v} onChange={handleOnValueChange(index)} />
-                  <Button onClick={handleOnKeyDelete(index)}>Delete</Button>
-                </Box>
-              ))}
-              <Button onClick={handleOnKeyAdd}>Add</Button>
-            </Box>
-          )}
-          <FormGroup>
-            <FormControlLabel
-              control={<Switch checked={jsonEdit} />}
-              onChange={handleOnJsonToggle}
-              label="Json"
-              disabled={varLoading}
-            />
-          </FormGroup>
-          {JSON.stringify(changes)}
-          {infoMessage}
-          <Button
-            onClick={handleOnSaveVariables}
-            disabled={varLoading || jsonError || noChanges}
+      <Box>
+        <Tabs value={tab} onChange={handleChange}>
+          <Tab label="JSON" />
+          <Tab label="Variables" />
+        </Tabs>
+      </Box>
+      <TabPanel value={tab} index={0}>
+        <JSONInput
+          placeholder={jsonInitialKV}
+          onChange={handleOnJsonKVChange}
+          height="200px"
+          confirmGood={false}
+          theme="light_mitsuketa_tribute"
+          locale={locale}
+        />
+      </TabPanel>
+      <TabPanel value={tab} index={1}>
+        {workingKV.map(({ key: k, value: v, index }) => (
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              mb: 1,
+            }}
+            key={index}
           >
-            Save
-          </Button>
-          <Button onClick={handleOnCancelEdit} disabled={varLoading}>
-            Cancel
-          </Button>
-          {varLoading && <CircularProgress />}
-        </div>
-      ) : (
-        <div>
-          {workingKV.map(({ key: k, value: v }) => (
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "space-around",
-              }}
-              key={k}
-            >
-              {k}: {JSON.stringify(v)}
-            </Box>
-          ))}
-          <Button onClick={handleOnEditVariables}>Edit variables</Button>
-        </div>
-      )}
+            <TextField value={k} onChange={handleOnKeyChange(index)} />
+            <TextField value={v} onChange={handleOnValueChange(index)} />
+            <Button onClick={handleOnKeyDelete(index)}>Delete</Button>
+          </Box>
+        ))}
+        <Button onClick={handleOnKeyAdd}>Add</Button>
+      </TabPanel>
+      {JSON.stringify(changes)}
+      {infoMessage}
+      <Button
+        onClick={handleOnSaveVariables}
+        disabled={varLoading || jsonError || noChanges}
+      >
+        Save
+      </Button>
+      {varLoading && <CircularProgress />}
     </Box>
   );
 };
