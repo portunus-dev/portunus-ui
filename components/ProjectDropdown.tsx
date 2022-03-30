@@ -24,12 +24,6 @@ const ProjectTab = ({ handleChooseProject }: ProjectTabProps) => {
   const { env, setToast, openCreateModal } = useContext(EnvContext);
 
   const {
-    PROJECT_FIELDS,
-    projectForm,
-    handleOnNewProjectChange,
-    createProjectLoading,
-    createProjectError,
-    handleOnCreateProject,
     deleteProjectLoading,
     deleteProjectError,
     handleOnDeleteProject,
@@ -41,24 +35,19 @@ const ProjectTab = ({ handleChooseProject }: ProjectTabProps) => {
   // catch all error toast
   useEffect(() => {
     if (
-      (!createProjectLoading && createProjectError) ||
       (!editProjectLoading && editProjectError) ||
       (!deleteProjectLoading && deleteProjectError)
     ) {
       setToast({
         content: (
           <Alert severity="error">
-            {createProjectError?.message ||
-              editProjectError?.message ||
-              deleteProjectError?.message}
+            {editProjectError?.message || deleteProjectError?.message}
           </Alert>
         ),
       });
     }
   }, [
     setToast,
-    createProjectLoading,
-    createProjectError,
     editProjectLoading,
     editProjectError,
     deleteProjectError,

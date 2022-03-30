@@ -3,18 +3,12 @@ import React, { useEffect, useState, useCallback } from "react";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import Grid from "@mui/material/Grid";
-import Divider from "@mui/material/Divider";
 
 import CircularProgress from "@mui/material/CircularProgress";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import Modal from "@mui/material/Modal";
-
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 import { apiRequest } from "../utils/api";
 import {
@@ -32,8 +26,10 @@ import { useRequest } from "../hooks/utils";
 
 import TeamDropdown from "../components/TeamDropdown";
 import ProjectDropdown from "../components/ProjectDropdown";
-
 import StageTab from "../components/StageTab";
+
+import AddTeam from "../components/AddTeam";
+import AddProject from "../components/AddProject";
 import AddStage from "../components/AddStage";
 
 const INDENT = {
@@ -226,8 +222,8 @@ export default function EnvRoot() {
         aria-describedby="modal-modal-description"
       >
         <Box sx={modalStyle}>
-          {modalType === "team" && <Box>Team</Box>}
-          {modalType === "project" && <Box>Project</Box>}
+          {modalType === "team" && <AddTeam />}
+          {modalType === "project" && <AddProject />}
           {modalType === "stage" && <AddStage />}
           {modalType === "user" && <Box>User</Box>}
         </Box>
