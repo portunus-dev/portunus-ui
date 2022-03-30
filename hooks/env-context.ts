@@ -11,6 +11,7 @@ type EnvContext = {
   }>;
   setToast: ({ content, action, duration }: Toast) => void;
   openCreateModal: (type: string) => void;
+  closeCreateModal: () => void;
 };
 
 const defaultContext: EnvContext = {
@@ -18,6 +19,7 @@ const defaultContext: EnvContext = {
   dispatch: () => {},
   setToast: () => {},
   openCreateModal: () => {},
+  closeCreateModal: () => {},
 };
 
 export const EnvContext = React.createContext(defaultContext);

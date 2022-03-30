@@ -2,13 +2,13 @@ import React, { useEffect, useState, useCallback } from "react";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
 import CircularProgress from "@mui/material/CircularProgress";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+
+import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import JSONInput from "react-json-editor-ajrm";
 import locale from "../locale/en.js";
@@ -205,7 +205,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       <Box>
         <Tabs value={tab} onChange={handleChange}>
           <Tab label="JSON" />
@@ -229,17 +229,27 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
               width: "100%",
               display: "flex",
               mb: 1,
+              p: 0.5,
             }}
             key={index}
           >
-            <TextField value={k} onChange={handleOnKeyChange(index)} />
-            <TextField value={v} onChange={handleOnValueChange(index)} />
-            <Button onClick={handleOnKeyDelete(index)}>Delete</Button>
+            <TextField
+              sx={{ flexGrow: 1, mr: 1 }}
+              value={k}
+              onChange={handleOnKeyChange(index)}
+            />
+            <TextField
+              sx={{ flexGrow: 1, ml: 1 }}
+              value={v}
+              onChange={handleOnValueChange(index)}
+            />
+            <IconButton onClick={handleOnKeyDelete(index)}>
+              <DeleteIcon />
+            </IconButton>
           </Box>
         ))}
         <Button onClick={handleOnKeyAdd}>Add</Button>
       </TabPanel>
-      {JSON.stringify(changes)}
       {infoMessage}
       <Button
         onClick={handleOnSaveVariables}

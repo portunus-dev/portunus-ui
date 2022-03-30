@@ -12,6 +12,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { apiRequest } from "../utils/api";
 import { Team, Project, Stage } from "../utils/types";
@@ -28,7 +29,7 @@ import Form from "./Form";
 const { NEXT_PUBLIC_READ_ONLY } = process.env;
 
 type StageTabProps = {
-  handleChooseStage: (value: Stage) => () => void;
+  handleChooseStage: (value: Stage) => void;
 };
 
 const fetchVarData = async ({
@@ -60,7 +61,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
     handleOnCreateStage,
     deleteStageLoading,
     deleteStageError,
-    deleteStage,
+    onDeleteStage,
   } = useStage();
 
   const {
@@ -98,7 +99,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
 
   const handleOnDeleteStage = (stage: Stage) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    deleteStage(stage);
+    onDeleteStage(stage);
   };
 
   // catch all error toast
@@ -126,12 +127,26 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
   const handleOnOpenCreateModal = () => openCreateModal("stage");
 
   const [expanded, setExpanded] = useState("");
-  const handleOnSetExpanded = (stage: Stage) => () => {
-    setExpanded((o) => (o === stage.stage ? "" : stage.stage));
-    handleChooseStage(stage);
-  };
+  const handleOnSetExpanded = useCallback(
+    (stage: Stage) => () => {
+      if (expanded === stage.stage) {
+        setExpanded("");
+      } else {
+        setExpanded(stage.stage);
+        handleChooseStage(stage);
+      }
+    },
+    [expanded]
+  );
+
+  useEffect(() => {
+    if (env.stage) {
+      setExpanded(env.stage.stage);
+    }
+  }, [env]);
+
   return (
-    <Grid container sx={{ p: 1 }}>
+    <Grid container>
       <Grid item xs={12}>
         <Box sx={{ display: "flex", width: "100%" }}>
           <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
@@ -150,6 +165,12 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
               <Accordion
                 expanded={expanded === o.stage}
                 onChange={handleOnSetExpanded(o)}
+                disableGutters
+                square
+                elevation={0}
+                sx={{
+                  border: "none",
+                }}
               >
                 <AccordionSummary>
                   <Box sx={{ flexGrow: 1 }}>
@@ -167,7 +188,9 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
                   <IconButton onClick={handleOnCopyPrintEnv(o)}>
                     <ContentCopyIcon />
                   </IconButton>
-                  <Button onClick={handleOnDeleteStage(o)}>Delete</Button>
+                  <IconButton onClick={handleOnDeleteStage(o)}>
+                    <DeleteIcon />
+                  </IconButton>
                 </AccordionSummary>
                 <AccordionDetails>
                   {env.team && env.project && env.stage && (
