@@ -1,14 +1,21 @@
-import Typography from "@mui/material/Typography";
+import Typography, { TypographyProps } from "@mui/material/Typography";
 import KeyIcon from "@mui/icons-material/Key";
+import { SvgIconProps } from "@mui/material/SvgIcon";
 
 type LogoPropTypes = {
-  color: string;
+  color?: string;
+  variant?: TypographyProps["variant"];
+  keySize?: SvgIconProps["fontSize"];
 };
 
-const PortunusLogo = ({ color }: LogoPropTypes) => {
+const PortunusLogo = ({
+  color = "black",
+  variant = "h6",
+  keySize = "small",
+}: LogoPropTypes) => {
   return (
     <Typography
-      variant="h6"
+      variant={variant}
       component="div"
       sx={{
         color,
@@ -18,7 +25,7 @@ const PortunusLogo = ({ color }: LogoPropTypes) => {
       }}
     >
       P
-      <KeyIcon fontSize="small" sx={{ color, transform: "rotate(-30deg)" }} />
+      <KeyIcon fontSize={keySize} sx={{ color, transform: "rotate(-30deg)" }} />
       tunus
     </Typography>
   );

@@ -111,7 +111,9 @@ const ProjectTab = ({ handleChooseProject }: ProjectTabProps) => {
           </Menu>
         </React.Fragment>
       ) : (
-        <Button onClick={handleOnOpenCreateModal}>Add Project</Button>
+        <Button onClick={handleOnOpenCreateModal} disabled={!env.team}>
+          Add Project
+        </Button>
       )}
     </Box>
   );

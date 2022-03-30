@@ -150,9 +150,16 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
       <Grid item xs={12}>
         <Box sx={{ display: "flex", width: "100%" }}>
           <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
-            Project Stages
+            {!env.team && "Create a team"}
+            {!env.project && "Create a project"}
+            {env.team && env.project && "Project Stages"}
           </Typography>
-          <Button onClick={handleOnOpenCreateModal}>Add Stage</Button>
+          <Button
+            onClick={handleOnOpenCreateModal}
+            disabled={!env.team || !env.project}
+          >
+            Add Stage
+          </Button>
         </Box>
       </Grid>
       {env.team && env.project && (
@@ -171,6 +178,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
                 sx={{
                   border: "none",
                 }}
+                key={o.stage}
               >
                 <AccordionSummary>
                   <Box sx={{ flexGrow: 1 }}>

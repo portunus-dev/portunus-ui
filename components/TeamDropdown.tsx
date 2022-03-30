@@ -38,9 +38,9 @@ const TeamDropdown = ({ handleChooseTeam }: TeamDropdownProps) => {
     deleteTeamLoading,
     deleteTeamError,
     handleOnDeleteTeam,
-    editTeamLoading,
-    editTeamError,
-    handleOnEditTeam,
+    editTeamNameLoading,
+    editTeamNameError,
+    handleOnEditTeamName,
     teamUserData,
     teamUserLoading,
     teamUserError,
@@ -76,7 +76,7 @@ const TeamDropdown = ({ handleChooseTeam }: TeamDropdownProps) => {
   useEffect(() => {
     if (
       (!createTeamLoading && createTeamError) ||
-      (!editTeamLoading && editTeamError) ||
+      (!editTeamNameLoading && editTeamNameError) ||
       (!deleteTeamLoading && deleteTeamError) ||
       (!teamUserLoading && teamUserError) ||
       (!addUserToTeamLoading && addUserToTeamError) ||
@@ -86,7 +86,7 @@ const TeamDropdown = ({ handleChooseTeam }: TeamDropdownProps) => {
         content: (
           <Alert severity="error">
             {createTeamError?.message ||
-              editTeamError?.message ||
+              editTeamNameError?.message ||
               deleteTeamError?.message ||
               teamUserError?.message ||
               addUserToTeamError?.message ||
@@ -99,8 +99,8 @@ const TeamDropdown = ({ handleChooseTeam }: TeamDropdownProps) => {
     setToast,
     createTeamLoading,
     createTeamError,
-    editTeamLoading,
-    editTeamError,
+    editTeamNameLoading,
+    editTeamNameError,
     teamUserLoading,
     deleteTeamError,
     deleteTeamLoading,
@@ -159,7 +159,7 @@ const TeamDropdown = ({ handleChooseTeam }: TeamDropdownProps) => {
               titleKey="name"
               onItemClick={handleOnTeamClick}
               onItemRemove={handleOnDeleteTeam}
-              onItemEdit={handleOnEditTeam}
+              onItemEdit={handleOnEditTeamName}
               confirmCount={2}
             />
             <MenuItem onClick={handleOnOpenCreateModal}>
