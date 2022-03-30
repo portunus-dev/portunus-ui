@@ -126,17 +126,13 @@ export default function MyApp(props: AppProps) {
             </Toolbar>
           </AppBar>
         )}
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="user-preferences-moddal"
-          aria-describedby="user-preferences-modal-description"
+        <Box
+          sx={{
+            width: "100%",
+            p: 2,
+            backgroundColor: theme.palette.background.default,
+          }}
         >
-          <Box sx={style}>
-            <User />
-          </Box>
-        </Modal>
-        <Box sx={{ width: "100%", p: 2 }}>
           <Component {...pageProps} />
         </Box>
       </ThemeProvider>

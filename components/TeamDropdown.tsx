@@ -22,7 +22,7 @@ import Form from "./Form";
 const { NEXT_PUBLIC_READ_ONLY } = process.env;
 
 type TeamDropdownProps = {
-  handleChooseTeam: (value: Team) => () => void;
+  handleChooseTeam: (value: Team) => void;
 };
 
 const TeamDropdown = ({ handleChooseTeam }: TeamDropdownProps) => {

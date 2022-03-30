@@ -1,14 +1,13 @@
 import React, { useContext, useEffect } from "react";
 
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import PeopleIcon from "@mui/icons-material/People";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 
 import { Project } from "../utils/types";
 
@@ -16,12 +15,9 @@ import { EnvContext } from "../hooks/env-context";
 import { useProject } from "../hooks/project";
 
 import InteractiveList from "./InteractiveList";
-import Form from "./Form";
-
-const { NEXT_PUBLIC_READ_ONLY } = process.env;
 
 type ProjectTabProps = {
-  handleChooseProject: (value: Project) => () => void;
+  handleChooseProject: (value: Project) => void;
 };
 
 const ProjectTab = ({ handleChooseProject }: ProjectTabProps) => {
@@ -94,7 +90,7 @@ const ProjectTab = ({ handleChooseProject }: ProjectTabProps) => {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
             onClick={handleClick}
-            startIcon={<PeopleIcon />}
+            startIcon={<AssignmentIcon />}
             endIcon={<ExpandMoreIcon />}
             sx={{ textTransform: "none" }}
           >
