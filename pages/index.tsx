@@ -9,6 +9,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Snackbar from "@mui/material/Snackbar";
 import Modal from "@mui/material/Modal";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 
 import { apiRequest } from "../utils/api";
 import {
@@ -26,7 +28,9 @@ import { useRequest } from "../hooks/utils";
 
 import TeamDropdown from "../components/TeamDropdown";
 import ProjectDropdown from "../components/ProjectDropdown";
+import TabPanel from "../components/TabPanel";
 import StageTab from "../components/StageTab";
+import TeamAdminTab from "../components/TeamAdminTab";
 
 import AddTeam from "../components/AddTeam";
 import AddProject from "../components/AddProject";
@@ -119,6 +123,12 @@ export default function EnvRoot() {
     setModalType(type);
   };
 
+  const [tab, setTab] = useState(0);
+
+  const handleTabChange = (_: React.SyntheticEvent, newTab: number) => {
+    setTab(newTab);
+  };
+
   return (
     <EnvContext.Provider
       value={{ env, dispatch, setToast, openCreateModal, closeCreateModal }}
@@ -200,9 +210,25 @@ export default function EnvRoot() {
             <TeamDropdown handleChooseTeam={handleChooseTeam} />
             <ProjectDropdown handleChooseProject={handleChooseProject} />
           </Box>
-          {/* TABS HERE & tab box */}
+          <Box
+            sx={{
+              display: "flex",
+              width: { xs: "100%", md: "70%", lg: "50%" },
+            }}
+          >
+            <Tabs value={tab} onChange={handleTabChange}>
+              <Tab label="Stages" />
+              <Tab label="Team Admin" />
+            </Tabs>
+          </Box>
+
           <Paper sx={{ p: 2, width: { xs: "100%", md: "70%", lg: "50%" } }}>
-            <StageTab handleChooseStage={handleChooseStage} />
+            <TabPanel value={tab} index={0}>
+              <StageTab handleChooseStage={handleChooseStage} />
+            </TabPanel>
+            <TabPanel value={tab} index={1}>
+              <TeamAdminTab />
+            </TabPanel>
           </Paper>
         </Box>
       )}

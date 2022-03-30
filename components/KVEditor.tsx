@@ -200,14 +200,14 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
 
   const [tab, setTab] = useState(0);
 
-  const handleChange = (_: React.SyntheticEvent, newTab: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newTab: number) => {
     setTab(newTab);
   };
 
   return (
     <Box>
       <Box>
-        <Tabs value={tab} onChange={handleChange}>
+        <Tabs value={tab} onChange={handleTabChange}>
           <Tab label="JSON" />
           <Tab label="Variables" />
         </Tabs>
