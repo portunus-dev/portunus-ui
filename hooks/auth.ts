@@ -19,7 +19,7 @@ export const parseJWT = (jwt: string) => {
   try {
     return JSON.parse(atob(jwt.split(".")[1]));
   } catch (e) {
-    console.log(e)
+    console.log(e);
     return {};
   }
 };
@@ -27,11 +27,11 @@ export const parseJWT = (jwt: string) => {
 /**
  * Hook to get the current user JWT from local storage, and login/logout controls
  */
-export const useAuth = (source?: string) => {
-  const loadedJwt = load()
+export const useAuth = () => {
+  const loadedJwt = load();
   const [jwt, setJWT] = useState<string>(loadedJwt);
 
-  const parsedJwt: UserType = parseJWT(loadedJwt)
+  const parsedJwt: UserType = parseJWT(loadedJwt);
   const [user, setUser] = useState<UserType>(parsedJwt);
 
   useEffect(() => {
@@ -44,8 +44,8 @@ export const useAuth = (source?: string) => {
   }, [jwt]);
 
   const refresh = () => {
-    setJWT(load)
-  }
+    setJWT(load);
+  };
 
   return {
     user,
