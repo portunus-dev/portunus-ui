@@ -15,6 +15,7 @@ export type Stage = {
   stage: string;
   project: string;
   team: string;
+  vars: string;
 };
 
 export type Var = {

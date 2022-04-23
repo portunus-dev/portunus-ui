@@ -6,7 +6,8 @@ import Typography from "@mui/material/Typography";
 import Alert, { AlertColor } from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import Paper from "@mui/material/Paper";
+import PortunusLogo from "../components/PortunusLogo";
 import Form from "../components/Form";
 
 import { PORTUNUS_API } from "../utils/api";
@@ -31,13 +32,15 @@ const FIELDS: Field[] = [
     invalid: "email",
     label: "Email",
     invalidText: "Enter a valid email",
+    materialProps: { fullWidth: true },
   },
   {
     key: "otp",
     invalid: (o) => o?.length < 6,
-    label: "OTP from email",
-    invalidText: "The OTP should be at least 6 characters long",
+    label: "Code from email",
+    invalidText: "The code should be at least 6 characters long",
     defaults: { hide: true },
+    materialProps: { fullWidth: true },
   },
 ];
 
@@ -107,7 +110,7 @@ const Login = () => {
         // TODO: show toast or something
         console.log(data);
         setMessage({
-          text: "Check your email for your OTP login!",
+          text: "Your one-time login was sent!",
           severity: "success",
         });
         setOTPSent(true);
@@ -116,7 +119,7 @@ const Login = () => {
         // TODO: show toast or something
         console.error(err);
         setMessage({
-          text: "There was an error getting your OTP login",
+          text: "There was an error sending your one-time login",
           severity: "error",
         });
       })
@@ -160,39 +163,67 @@ const Login = () => {
 
   return (
     <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        p: 1,
-        alignItems: "center",
-      }}
+      sx={{ width: "100%", display: "flex", justifyContent: "center", pt: 6 }}
     >
-      <Typography variant="h6" component="div" gutterBottom>
-        Welcome to Portunus
-      </Typography>
+      <Paper
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          p: 1,
+          pb: 3,
+          alignItems: "center",
+          width: {
+            xs: "90%",
+            md: "50%",
+            lg: "40%",
+          },
+        }}
+      >
+        <PortunusLogo variant="h4" keySize="large" />
 
-      <Form fields={FIELDS} form={form} onChange={handleOnFormChange} />
-      {!otpSent && (
-        <Button
-          onClick={handleOnGetOTP}
-          disabled={!form.email.value || form.email?.invalid || otpSending}
+        <Box
+          sx={{ width: { xs: "80%", sm: "65%", md: "60%", lg: "48%" }, mt: 2 }}
         >
-          Get OTP
-        </Button>
-      )}
-      {otpSent && (
-        <Button
-          disabled={!form.otp.value || form.otp.invalid}
-          onClick={handleOnLogin}
-        >
-          Login
-        </Button>
-      )}
-      {otpSending && <CircularProgress />}
-      {message.text && (
-        <Alert severity={message.severity || "info"}>{message.text}</Alert>
-      )}
-      {otpSent && <Button onClick={handleOnReset}>Reset</Button>}
+          <Form fields={FIELDS} form={form} onChange={handleOnFormChange} />
+          {!otpSent && (
+            <Button
+              onClick={handleOnGetOTP}
+              disabled={!form.email.value || form.email?.invalid || otpSending}
+              variant="contained"
+              fullWidth
+              sx={{ mt: 1 }}
+            >
+              Request Magic Link
+            </Button>
+          )}
+          {otpSent && (
+            <Button
+              disabled={!form.otp.value || form.otp.invalid}
+              onClick={handleOnLogin}
+              variant="contained"
+              fullWidth
+              sx={{ mt: 1, mb: 1 }}
+            >
+              Login
+            </Button>
+          )}
+          {otpSent && (
+            <Box>
+              Didn&apos;t receive a link?&nbsp;
+              <Button
+                onClick={handleOnReset}
+                sx={{ textTransform: "none", textDecoration: "underline" }}
+              >
+                Reset
+              </Button>
+            </Box>
+          )}
+          {message.text && (
+            <Alert severity={message.severity || "info"}>{message.text}</Alert>
+          )}
+        </Box>
+        {otpSending && <CircularProgress />}
+      </Paper>
     </Box>
   );
 };

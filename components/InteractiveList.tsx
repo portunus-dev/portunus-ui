@@ -105,16 +105,7 @@ function InteractiveList<ListItem extends StringObject>({
   };
 
   return (
-    <List
-      subheader={
-        subheader && (
-          <ListSubheader component="div" id="nested-list-subheader">
-            {subheader}
-          </ListSubheader>
-        )
-      }
-      dense
-    >
+    <React.Fragment>
       {items.map((o: ListItem) => (
         <ListItem
           divider
@@ -166,15 +157,20 @@ function InteractiveList<ListItem extends StringObject>({
               )}
             </Box>
           }
+          sx={{ p: 0 }}
         >
           {editingKey === o[keyKey] ? (
             <TextField
               variant="standard"
               value={newValue}
               onChange={handleOnValueChange}
+              sx={{ p: 1 }}
             />
           ) : (
-            <ListItemButton onClick={onItemClick ? onItemClick(o) : undefined}>
+            <ListItemButton
+              sx={{ width: "100%", height: "100%", p: 1 }}
+              onClick={onItemClick ? onItemClick(o) : undefined}
+            >
               <ListItemText
                 primary={o[titleKey]}
                 secondary={o[descriptionKey] || ""}
@@ -183,7 +179,7 @@ function InteractiveList<ListItem extends StringObject>({
           )}
         </ListItem>
       ))}
-    </List>
+    </React.Fragment>
   );
 }
 
