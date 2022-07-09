@@ -75,7 +75,6 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
   // TODO: current updating in KVEditor is broken by changing tabs because component unmounts, but initialKV doesn't change since varData isn't reloaded
   const [base, setBase] = useState(initialKV);
 
-  const [jsonEdit, setJsonEdit] = useState(false);
   const [jsonInitialKV, setJsonInitialKV] = useState(initialKV);
   const [workingKV, setWorkingKV] = useState(transformObjectToList(initialKV));
   const [infoMessage, setInfoMessage] = useState("");
@@ -155,7 +154,6 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
     }
     setJsonError(error === false ? false : error.reason);
   };
-  const handleOnJsonToggle = () => setJsonEdit((o) => !o);
 
   const putVarData = useCallback(async ({ team, project, stage, updates }) => {
     const res = await apiRequest("env", {
@@ -179,18 +177,12 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
     requestPromise: putVarData,
   });
 
-  const handleOnSaveVariables = () => {
-    varExecuteRequest({ ...env, updates: changes });
+  const handleOnSaveVariables = async () => {
+    await varExecuteRequest({ ...env, updates: changes });
+    setBase(transformListToObject(workingKV));
+    setChanges(EMPTY_CHANGES);
+    setInfoMessage("");
   };
-
-  useEffect(() => {
-    if (!varLoading && !varError && varData) {
-      setBase(transformListToObject(workingKV));
-      setChanges(EMPTY_CHANGES);
-      setInfoMessage("");
-      setJsonEdit(false);
-    }
-  }, [varData, varError, varLoading, workingKV]);
 
   const noChanges =
     changes &&

@@ -23,10 +23,6 @@ import { useRequest } from "../hooks/utils";
 import { useAuth } from "../hooks/auth";
 
 import KVEditor from "./KVEditor";
-import InteractiveList from "./InteractiveList";
-import Form from "./Form";
-
-const { NEXT_PUBLIC_READ_ONLY } = process.env;
 
 type StageTabProps = {
   handleChooseStage: (value: Stage) => void;
@@ -53,12 +49,8 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
   const { env, setToast, openCreateModal } = useContext(EnvContext);
 
   const {
-    STAGE_FIELDS,
-    stageForm,
-    handleOnNewStageChange,
     createStageLoading,
     createStageError,
-    handleOnCreateStage,
     deleteStageLoading,
     deleteStageError,
     onDeleteStage,
@@ -88,9 +80,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
         stage.team
       }/${stage.project.replace(`${stage.team}::`, "")}/${stage.stage}`;
 
-      console.log("clipboard!");
       navigator.clipboard.writeText(printEnvEntry).then(() => {
-        console.log("the toast!");
         setToast({ content: "Copied!", duration: 1500 });
       });
     },
@@ -190,7 +180,8 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
                       component="div"
                       sx={{ color: "text.secondary" }}
                     >
-                      {o.vars?.length ? `${o.vars}` : "No"} variables
+                      {!o.vars ? "No" : `${o.vars}`} variable
+                      {`${o.vars == "1" ? "" : "s"}`}
                     </Typography>
                   </Box>
                   <IconButton onClick={handleOnCopyPrintEnv(o)}>
