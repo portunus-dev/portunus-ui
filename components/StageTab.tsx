@@ -151,7 +151,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
         <Box sx={{ display: "flex", width: "100%" }}>
           <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
             {!env.team && "Create a team"}
-            {!env.project && "Create a project"}
+            {env.team && !env.project && "Create a project"}
             {env.team && env.project && "Project Stages"}
           </Typography>
           <Button
@@ -190,7 +190,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
                       component="div"
                       sx={{ color: "text.secondary" }}
                     >
-                      {o.vars} Variables
+                      {o.vars?.length ? `${o.vars}` : "No"} variables
                     </Typography>
                   </Box>
                   <IconButton onClick={handleOnCopyPrintEnv(o)}>

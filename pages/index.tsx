@@ -218,7 +218,7 @@ export default function EnvRoot() {
           >
             <Tabs value={tab} onChange={handleTabChange}>
               <Tab label="Stages" />
-              <Tab label="Team Admin" />
+              <Tab label="Team Admin" disabled={!env.team} />
             </Tabs>
           </Box>
 
