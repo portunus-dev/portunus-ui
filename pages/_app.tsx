@@ -1,5 +1,8 @@
 import React, { useEffect } from "react";
 
+import { CacheProvider, EmotionCache } from "@emotion/react";
+import createEmotionCache from "../src/createEmotionCache";
+
 import CssBaseline from "@mui/material/CssBaseline";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -21,28 +24,17 @@ import Head from "next/head";
 import theme from "../src/theme";
 import Link from "../src/Link";
 
-import User from "../components/User";
-
 import PortunusLogo from "../components/PortunusLogo";
 import { useAuth } from "../hooks/auth";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  height: 300,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-  overflowY: "auto",
-  overflowX: "hidden",
-};
+const clientSideEmotionCache = createEmotionCache();
 
-export default function MyApp(props: AppProps) {
-  const { Component, pageProps } = props;
+interface MyAppProps extends AppProps {
+  emotionCache?: EmotionCache;
+}
+
+export default function MyApp(props: MyAppProps) {
+  const { Component, pageProps, emotionCache = clientSideEmotionCache } = props;
   const router = useRouter();
 
   const { isLoggedIn, user, logout, refresh } = useAuth();
@@ -67,10 +59,9 @@ export default function MyApp(props: AppProps) {
   };
 
   return (
-    <React.Fragment>
+    <CacheProvider value={emotionCache}>
       <Head>
         <title>Portunus</title>
-        <link href="/favicon.ico" rel="icon" />
         <meta
           content="minimum-scale=1, initial-scale=1, width=device-width"
           name="viewport"
@@ -136,6 +127,6 @@ export default function MyApp(props: AppProps) {
           <Component {...pageProps} />
         </Box>
       </ThemeProvider>
-    </React.Fragment>
+    </CacheProvider>
   );
 }
