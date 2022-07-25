@@ -120,6 +120,7 @@ export default function MyApp(props: MyAppProps) {
         <Box
           sx={{
             width: "100%",
+            height: "calc(100vh - 64px)",
             p: 2,
             backgroundColor: theme.palette.background.default,
           }}

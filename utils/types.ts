@@ -58,6 +58,7 @@ export type FullUser = {
   key: string;
   email: string;
   jwt_uuid: string;
+  public_key: boolean;
   preferences?: {
     audit: boolean;
   };

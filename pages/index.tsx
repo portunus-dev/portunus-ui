@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+import IconButton from "@mui/material/IconButton";
 
 import CircularProgress from "@mui/material/CircularProgress";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -11,6 +12,8 @@ import Snackbar from "@mui/material/Snackbar";
 import Modal from "@mui/material/Modal";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+
+import SettingsIcon from "@mui/icons-material/Settings";
 
 import { apiRequest } from "../utils/api";
 import {
@@ -36,6 +39,8 @@ import AddTeam from "../components/AddTeam";
 import AddProject from "../components/AddProject";
 import AddStage from "../components/AddStage";
 
+import User from "../components/User";
+
 const INDENT = {
   team: 1,
   project: 3,
@@ -59,7 +64,8 @@ const modalStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
+  width: 500,
+  overflow: "hidden",
   bgcolor: "background.paper",
   border: "2px solid #000",
   boxShadow: 24,
@@ -128,6 +134,8 @@ export default function EnvRoot() {
   const handleTabChange = (_: React.SyntheticEvent, newTab: number) => {
     setTab(newTab);
   };
+
+  const handleOnOpenModal = (type: string) => () => openCreateModal(type);
 
   return (
     <EnvContext.Provider
@@ -207,6 +215,10 @@ export default function EnvRoot() {
               width: { xs: "100%", md: "70%", lg: "50%" },
             }}
           >
+            <IconButton size="small" onClick={handleOnOpenModal("user")}>
+              <SettingsIcon />
+            </IconButton>
+
             <TeamDropdown handleChooseTeam={handleChooseTeam} />
             <ProjectDropdown handleChooseProject={handleChooseProject} />
           </Box>
@@ -251,7 +263,7 @@ export default function EnvRoot() {
           {modalType === "team" && <AddTeam />}
           {modalType === "project" && <AddProject />}
           {modalType === "stage" && <AddStage />}
-          {modalType === "user" && <Box>User</Box>}
+          {modalType === "user" && <User />}
         </Box>
       </Modal>
     </EnvContext.Provider>

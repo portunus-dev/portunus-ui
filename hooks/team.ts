@@ -53,7 +53,7 @@ const fetchTeamAuditData = async (team: Team) => {
   auditHistory.sort(
     (a, b) => new Date(b.start).valueOf() - new Date(a.start).valueOf()
   );
-  console.log("res from api!", res);
+
   return auditHistory;
 };
 

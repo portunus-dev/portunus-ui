@@ -1,6 +1,5 @@
 import React from "react";
 import Document, { Html, Head, Main, NextScript } from "next/document";
-import { ServerStyleSheet } from "styled-components";
 import createEmotionServer from "@emotion/server/create-instance";
 
 import { CssBaseline } from "@mui/material";
