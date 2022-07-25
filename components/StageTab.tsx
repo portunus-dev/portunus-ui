@@ -38,7 +38,7 @@ const fetchVarData = async ({
   stage: Stage;
 }) => {
   const res = await apiRequest(
-    `env?team=${team.key}&project=${project.project}&stage=${stage.stage}`,
+    `env?ui=true&team=${team.key}&project=${project.project}&stage=${stage.stage}`,
     { method: "GET" }
   );
   const vars = res;
