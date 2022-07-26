@@ -8,8 +8,25 @@ const getUser = async () => {
   const resp = await apiRequest("user", {
     method: "GET",
   });
+
   const user: FullUser = resp.user;
   return user;
+};
+
+const editUserKey = async ({ public_key }: { public_key: string }) => {
+  console.log("update key: ", public_key);
+  await apiRequest("user/key", {
+    method: "PUT",
+    body: JSON.stringify({ public_key }),
+  });
+  return { public_key };
+};
+
+const deleteUserKey = async () => {
+  await apiRequest("user/key", {
+    method: "DELETE",
+  });
+  return true;
 };
 
 const editUserAudit = async ({ audit }: { audit: boolean }) => {
@@ -28,7 +45,7 @@ const fetchUserAuditData = async () => {
   auditHistory.sort(
     (a, b) => new Date(b.start).valueOf() - new Date(a.start).valueOf()
   );
-  console.log("res from api!", res);
+
   return auditHistory;
 };
 
@@ -47,10 +64,28 @@ export const useUser = () => {
     userExecuteRequest();
   }, []);
 
-  const [user, setUser] = useState<FullUser | null>();
-  useEffect(() => {
-    setUser(userData);
-  }, [userData]);
+  const {
+    data: editUserKeyData,
+    loading: editUserKeyLoading,
+    error: editUserKeyError,
+    executeRequest: editUserKeyExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: editUserKey,
+  });
+
+  const handleOnEditUserKey = (public_key: string) =>
+    editUserKeyExecuteRequest({ public_key });
+
+  const {
+    data: deleteUserKeyData,
+    loading: deleteUserKeyLoading,
+    error: deleteUserKeyError,
+    executeRequest: deleteUserKeyExecuteRequest,
+  } = useRequest<any>({
+    requestPromise: deleteUserKey,
+  });
+
+  const handleOnDeleteUserKey = () => deleteUserKeyExecuteRequest();
 
   const {
     data: editUserAuditData,
@@ -66,10 +101,10 @@ export const useUser = () => {
 
   // refresh data! TODO: just set user data to the diff, instead of fetching
   useEffect(() => {
-    if (editUserAuditData) {
+    if (editUserAuditData || editUserKeyData || deleteUserKeyData) {
       userExecuteRequest();
     }
-  }, [editUserAuditData]);
+  }, [editUserAuditData, editUserKeyData, deleteUserKeyData]);
 
   const {
     data: userAuditData,
@@ -84,10 +119,21 @@ export const useUser = () => {
     userAuditExecuteRequest();
   }, []);
 
+  console.log(userData);
   return {
-    user,
+    userData,
     userDataLoading,
     userDataError,
+    editUserKeyData,
+    editUserKeyLoading,
+    editUserKeyError,
+    editUserKeyExecuteRequest,
+    handleOnEditUserKey,
+    deleteUserKeyData,
+    deleteUserKeyLoading,
+    deleteUserKeyError,
+    deleteUserKeyExecuteRequest,
+    handleOnDeleteUserKey,
     editUserAuditData,
     editUserAuditLoading,
     editUserAuditError,
