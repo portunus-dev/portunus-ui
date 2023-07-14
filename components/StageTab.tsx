@@ -184,7 +184,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
                       {`${o.vars == "1" ? "" : "s"}`}
                     </Typography>
                   </Box>
-                  <IconButton onClick={handleOnCopyPrintEnv(o)}>
+                  <IconButton onClick={handleOnCopyPrintEnv(o)} title="Copy Token">
                     <ContentCopyIcon />
                   </IconButton>
                   <IconButton onClick={handleOnDeleteStage(o)}>
