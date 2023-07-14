@@ -187,7 +187,7 @@ const StageTab = ({ handleChooseStage }: StageTabProps) => {
                   <IconButton onClick={handleOnCopyPrintEnv(o)} title="Copy Token">
                     <ContentCopyIcon />
                   </IconButton>
-                  <IconButton onClick={handleOnDeleteStage(o)}>
+                  <IconButton onClick={handleOnDeleteStage(o)} title="Delete Stage">
                     <DeleteIcon />
                   </IconButton>
                 </AccordionSummary>
