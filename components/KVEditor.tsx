@@ -141,6 +141,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
     });
 
   const [jsonError, setJsonError] = useState(false);
+  const [isJsonChanged, setIsJsonChanged] = useState(false);
   const handleOnJsonKVChange = ({
     jsObject,
     error,
@@ -151,6 +152,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
     if (!jsonError) {
       // TODO: validate nesting, arrays etc
       setWorkingKV(transformObjectToList(jsObject));
+      setIsJsonChanged(true); // Set the state here
     }
     setJsonError(error === false ? false : error.reason);
   };
@@ -181,6 +183,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
     await varExecuteRequest({ ...env, updates: changes });
     setBase(transformListToObject(workingKV));
     setChanges(EMPTY_CHANGES);
+    setIsJsonChanged(false); // Reset the state here
     setInfoMessage("");
   };
 
@@ -245,7 +248,7 @@ const KVEditor = ({ initialKV, env }: KVEditorProps) => {
       {infoMessage}
       <Button
         onClick={handleOnSaveVariables}
-        disabled={varLoading || jsonError || noChanges}
+        disabled={varLoading || jsonError || (noChanges && !isJsonChanged)}
       >
         Save
       </Button>
